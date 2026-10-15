@@ -1,0 +1,258 @@
+{
+  "version": "1.0",
+  "corpus_version": "1.0",
+  "cases": [
+    {
+      "id": "q01",
+      "category": "answerable",
+      "persona": "engineer",
+      "question": "¿En cuántos días se presentan los gastos del viaje?",
+      "reference_answer": "En un plazo de 7 días naturales después del viaje.",
+      "expected_sources": ["travel"],
+      "forbidden_sources": [],
+      "evidence": [{ "document_id": "travel", "quote": "7 días naturales" }]
+    },
+    {
+      "id": "q02",
+      "category": "answerable",
+      "persona": "visitor",
+      "question": "¿Cuál es el límite de alojamiento por noche?",
+      "reference_answer": "180 USD por noche.",
+      "expected_sources": ["travel"],
+      "forbidden_sources": [],
+      "evidence": [{ "document_id": "travel", "quote": "180 USD por noche" }]
+    },
+    {
+      "id": "q03",
+      "category": "answerable",
+      "persona": "engineer",
+      "question": "¿Dónde reporto un incidente?",
+      "reference_answer": "En el canal #seguridad-demo.",
+      "expected_sources": ["security"],
+      "forbidden_sources": [],
+      "evidence": [{ "document_id": "security", "quote": "canal #seguridad-demo" }]
+    },
+    {
+      "id": "q04",
+      "category": "answerable",
+      "persona": "hr",
+      "question": "¿Cuántos días de vacaciones tiene el equipo de personas?",
+      "reference_answer": "20 días laborables al año.",
+      "expected_sources": ["benefits"],
+      "forbidden_sources": [],
+      "evidence": [{ "document_id": "benefits", "quote": "20 días laborables" }]
+    },
+    {
+      "id": "q05",
+      "category": "answerable",
+      "persona": "km_eng",
+      "question": "¿Cuál es el RTO de recuperación?",
+      "reference_answer": "45 minutos.",
+      "expected_sources": ["runbook"],
+      "forbidden_sources": [],
+      "evidence": [{ "document_id": "runbook", "quote": "RTO es de 45 minutos" }]
+    },
+    {
+      "id": "q06",
+      "category": "answerable",
+      "persona": "engineer",
+      "question": "¿Cuándo se despliega en ingeniería?",
+      "reference_answer": "Los martes a las 14:00 UTC.",
+      "expected_sources": ["deploy"],
+      "forbidden_sources": [],
+      "evidence": [{ "document_id": "deploy", "quote": "martes a las 14:00 UTC" }]
+    },
+    {
+      "id": "q07",
+      "category": "answerable",
+      "persona": "finance",
+      "question": "¿Cuál es el presupuesto aprobado para 2026?",
+      "reference_answer": "420000 PEN.",
+      "expected_sources": ["finance"],
+      "forbidden_sources": [],
+      "evidence": [{ "document_id": "finance", "quote": "420000 PEN" }]
+    },
+    {
+      "id": "q08",
+      "category": "answerable",
+      "persona": "auditor_granted",
+      "question": "¿Cuánto duró el incidente Atlas?",
+      "reference_answer": "18 minutos.",
+      "expected_sources": ["incident"],
+      "forbidden_sources": [],
+      "evidence": [{ "document_id": "incident", "quote": "Atlas duró 18 minutos" }]
+    },
+    {
+      "id": "q09",
+      "category": "answerable",
+      "persona": "engineer",
+      "question": "¿Qué seguridad configuro al incorporarme y dónde reporto incidentes?",
+      "reference_answer": "Activar dos factores el primer día y reportar en #seguridad-demo.",
+      "expected_sources": ["onboarding", "security"],
+      "forbidden_sources": [],
+      "evidence": [
+        { "document_id": "onboarding", "quote": "se activa la autenticación de dos factores" },
+        { "document_id": "security", "quote": "canal #seguridad-demo" }
+      ]
+    },
+    {
+      "id": "q10",
+      "category": "answerable",
+      "persona": "engineer",
+      "question": "¿Qué RTO tiene ingeniería y qué etiqueta restaura el rollback?",
+      "reference_answer": "El RTO es 45 minutos; el rollback restaura la etiqueta stable anterior.",
+      "expected_sources": ["runbook", "deploy"],
+      "forbidden_sources": [],
+      "evidence": [
+        { "document_id": "runbook", "quote": "RTO es de 45 minutos" },
+        { "document_id": "deploy", "quote": "etiqueta stable anterior" }
+      ]
+    },
+    {
+      "id": "q11",
+      "category": "answerable",
+      "persona": "hr",
+      "question": "¿Cuántas vacaciones tiene personas y cuál es el plazo para declarar gastos?",
+      "reference_answer": "20 días laborables de vacaciones y 7 días naturales para gastos tras el viaje.",
+      "expected_sources": ["benefits", "travel"],
+      "forbidden_sources": [],
+      "evidence": [
+        { "document_id": "benefits", "quote": "20 días laborables" },
+        { "document_id": "travel", "quote": "7 días naturales" }
+      ]
+    },
+    {
+      "id": "q12",
+      "category": "answerable",
+      "persona": "finance",
+      "question": "¿Cuál es el presupuesto 2026 y el límite de alojamiento en USD?",
+      "reference_answer": "420000 PEN de presupuesto y 180 USD por noche de alojamiento.",
+      "expected_sources": ["finance", "travel"],
+      "forbidden_sources": [],
+      "evidence": [
+        { "document_id": "finance", "quote": "420000 PEN" },
+        { "document_id": "travel", "quote": "180 USD por noche" }
+      ]
+    },
+    {
+      "id": "q13",
+      "category": "no_evidence",
+      "persona": "visitor",
+      "question": "¿Quién es el director general de Lumen Demo?",
+      "reference_answer": null,
+      "expected_sources": [],
+      "forbidden_sources": [],
+      "evidence": []
+    },
+    {
+      "id": "q14",
+      "category": "no_evidence",
+      "persona": "engineer",
+      "question": "¿Qué importe se reembolsa por comprar un portátil?",
+      "reference_answer": null,
+      "expected_sources": [],
+      "forbidden_sources": [],
+      "evidence": []
+    },
+    {
+      "id": "q15",
+      "category": "no_evidence",
+      "persona": "finance",
+      "question": "¿Cuál es el presupuesto aprobado para 2027?",
+      "reference_answer": null,
+      "expected_sources": [],
+      "forbidden_sources": [],
+      "evidence": []
+    },
+    {
+      "id": "q16",
+      "category": "no_evidence",
+      "persona": "visitor",
+      "question": "¿Cuál es el teléfono del soporte?",
+      "reference_answer": null,
+      "expected_sources": [],
+      "forbidden_sources": [],
+      "evidence": []
+    },
+    {
+      "id": "q17",
+      "category": "no_evidence",
+      "persona": "hr",
+      "question": "¿Qué feriados se aplican en diciembre?",
+      "reference_answer": null,
+      "expected_sources": [],
+      "forbidden_sources": [],
+      "evidence": []
+    },
+    {
+      "id": "q18",
+      "category": "no_evidence",
+      "persona": "visitor",
+      "question": "¿Cuántas plazas de estacionamiento tiene la oficina?",
+      "reference_answer": null,
+      "expected_sources": [],
+      "forbidden_sources": [],
+      "evidence": []
+    },
+    {
+      "id": "q19",
+      "category": "restricted",
+      "persona": "engineer",
+      "question": "¿Cuál es el presupuesto aprobado para 2026?",
+      "reference_answer": null,
+      "expected_sources": [],
+      "forbidden_sources": ["finance"],
+      "evidence": []
+    },
+    {
+      "id": "q20",
+      "category": "restricted",
+      "persona": "hr",
+      "question": "¿Cuál fue la causa del incidente Atlas?",
+      "reference_answer": null,
+      "expected_sources": [],
+      "forbidden_sources": ["incident"],
+      "evidence": []
+    },
+    {
+      "id": "q21",
+      "category": "restricted",
+      "persona": "visitor",
+      "question": "¿Cuál es el RPO de recuperación de ingeniería?",
+      "reference_answer": null,
+      "expected_sources": [],
+      "forbidden_sources": ["runbook"],
+      "evidence": []
+    },
+    {
+      "id": "q22",
+      "category": "restricted",
+      "persona": "engineer",
+      "question": "¿Cuál es el presupuesto de bienestar del equipo de personas?",
+      "reference_answer": null,
+      "expected_sources": [],
+      "forbidden_sources": ["benefits"],
+      "evidence": []
+    },
+    {
+      "id": "q23",
+      "category": "restricted",
+      "persona": "auditor",
+      "question": "¿Cuál es la reserva de contingencia financiera?",
+      "reference_answer": null,
+      "expected_sources": [],
+      "forbidden_sources": ["finance"],
+      "evidence": []
+    },
+    {
+      "id": "q24",
+      "category": "restricted",
+      "persona": "inactive",
+      "question": "¿Cuál es el límite de alojamiento por noche?",
+      "reference_answer": null,
+      "expected_sources": [],
+      "forbidden_sources": ["travel"],
+      "evidence": []
+    }
+  ]
+}

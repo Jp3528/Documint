@@ -1,0 +1,11 @@
+# Presupuesto interno de finanzas 2026
+
+Contenido ficticio de Lumen Demo para pruebas de DocuMind AI. No es una política real.
+
+## Presupuesto
+
+El presupuesto aprobado para 2026 es de 420000 PEN. La revisión se realiza cada trimestre.
+
+## Reserva
+
+La reserva de contingencia es de 35000 PEN. Estas cifras son ficticias y de uso restringido en la demo.

@@ -16,11 +16,16 @@ dependencies = [
 ]
 
 [dependency-groups]
+corpus = [
+    "reportlab>=4.4,<5",
+]
 dev = [
   "boto3-stubs[s3]>=1.42,<2",
   "httpx2>=2.13.1",
   "mypy>=1.19,<2",
+  "pypdf>=6,<10",
   "pytest>=9,<10",
+  "python-docx>=1.2,<2",
   "ruff>=0.15,<1",
 ]
 
@@ -37,10 +42,14 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["apps/api", "apps/worker", "packages", "scripts", "tests", "migrations"]
+files = ["apps/api", "apps/worker", "packages", "scripts", "tests", "migrations", "evals"]
 
 [[tool.mypy.overrides]]
 module = ["celery", "celery.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["reportlab", "reportlab.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

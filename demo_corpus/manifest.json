@@ -1,0 +1,110 @@
+{
+  "version": "1.0",
+  "synthetic": true,
+  "documents": [
+    {
+      "id": "travel",
+      "file": "politica_viajes.pdf",
+      "title": "Política de viajes de Lumen Demo",
+      "visibility": "COMPANY",
+      "department": "people",
+      "owner": "hr",
+      "read_users": [],
+      "read_roles": [],
+      "sha256": "97c7bf446ceca3affb219f10a22bdb1082e8e8d0655f7dc689c76eef901fa6ac",
+      "size_bytes": 1933,
+      "version": 1
+    },
+    {
+      "id": "security",
+      "file": "manual_seguridad.pdf",
+      "title": "Manual de seguridad de Lumen Demo",
+      "visibility": "COMPANY",
+      "department": "engineering",
+      "owner": "km_eng",
+      "read_users": [],
+      "read_roles": [],
+      "sha256": "ed6148ce209f1a94bfd6b077ed440b4189dc0d3831e6f3f6600cd5c7f5afbed2",
+      "size_bytes": 1928,
+      "version": 1
+    },
+    {
+      "id": "runbook",
+      "file": "runbook_datos.docx",
+      "title": "Recuperación de datos de ingeniería",
+      "visibility": "DEPARTMENT",
+      "department": "engineering",
+      "owner": "km_eng",
+      "read_users": [],
+      "read_roles": [],
+      "sha256": "cff86ad95289ba0978e068d371e9f6667bd5bc55a5d785c552b057213c6344f7",
+      "size_bytes": 36869,
+      "version": 1
+    },
+    {
+      "id": "benefits",
+      "file": "beneficios_personal.docx",
+      "title": "Beneficios del equipo de personas",
+      "visibility": "DEPARTMENT",
+      "department": "people",
+      "owner": "hr",
+      "read_users": [],
+      "read_roles": [],
+      "sha256": "a543b02d44972abb62f6640929e27074c0bb6a7b72a124c5841a16596d069933",
+      "size_bytes": 36820,
+      "version": 1
+    },
+    {
+      "id": "finance",
+      "file": "presupuesto_2026.txt",
+      "title": "Presupuesto interno de finanzas 2026",
+      "visibility": "RESTRICTED",
+      "department": "finance",
+      "owner": "finance",
+      "read_users": [],
+      "read_roles": [],
+      "sha256": "4f65e1c44d520f9089848a79a3a43958c57a4a98ccf2847730cdd8a8efcf4399",
+      "size_bytes": 354,
+      "version": 1
+    },
+    {
+      "id": "incident",
+      "file": "incidente_atlas.txt",
+      "title": "Informe del incidente Atlas",
+      "visibility": "RESTRICTED",
+      "department": "engineering",
+      "owner": "security_owner",
+      "read_users": ["auditor_granted"],
+      "read_roles": [],
+      "sha256": "c151a39416e3b8274d9a36347d48ab33c32e04c191c9c5c9f4a02d5a5e322c92",
+      "size_bytes": 425,
+      "version": 1
+    },
+    {
+      "id": "onboarding",
+      "file": "incorporacion.md",
+      "title": "Incorporación a Lumen Demo",
+      "visibility": "COMPANY",
+      "department": "people",
+      "owner": "hr",
+      "read_users": [],
+      "read_roles": [],
+      "sha256": "2d239b4f9718a53cd4d3e1325a224f4e029ed7bfcde6a93d43eea61c8ca90505",
+      "size_bytes": 333,
+      "version": 1
+    },
+    {
+      "id": "deploy",
+      "file": "despliegue_ingenieria.md",
+      "title": "Despliegues de ingeniería",
+      "visibility": "DEPARTMENT",
+      "department": "engineering",
+      "owner": "km_eng",
+      "read_users": [],
+      "read_roles": [],
+      "sha256": "2277b5f5dc8bdf1496d8088412945dcb2c39f37819ff310f308613a06132130a",
+      "size_bytes": 308,
+      "version": 1
+    }
+  ]
+}

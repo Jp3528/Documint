@@ -1,1 +1,1 @@
-"""Provider contracts and deterministic fakes are introduced in session 0C."""
+"""Typed provider contracts and offline fakes; real adapters are explicit later phases."""

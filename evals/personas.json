@@ -1,0 +1,75 @@
+{
+  "version": "1.0",
+  "personas": [
+    {
+      "id": "admin",
+      "email": "admin@documind.example",
+      "roles": ["ADMIN"],
+      "departments": [],
+      "active": true
+    },
+    {
+      "id": "km_eng",
+      "email": "km@documind.example",
+      "roles": ["KNOWLEDGE_MANAGER"],
+      "departments": ["engineering"],
+      "active": true
+    },
+    {
+      "id": "engineer",
+      "email": "ingenieria@documind.example",
+      "roles": ["EMPLOYEE"],
+      "departments": ["engineering"],
+      "active": true
+    },
+    {
+      "id": "hr",
+      "email": "personas@documind.example",
+      "roles": ["EMPLOYEE"],
+      "departments": ["people"],
+      "active": true
+    },
+    {
+      "id": "finance",
+      "email": "finanzas@documind.example",
+      "roles": ["EMPLOYEE"],
+      "departments": ["finance"],
+      "active": true
+    },
+    {
+      "id": "security_owner",
+      "email": "seguridad@documind.example",
+      "roles": ["EMPLOYEE"],
+      "departments": ["engineering"],
+      "active": true
+    },
+    {
+      "id": "auditor",
+      "email": "auditoria@documind.example",
+      "roles": ["AUDITOR"],
+      "departments": [],
+      "active": true
+    },
+    {
+      "id": "auditor_granted",
+      "email": "auditoria.autorizada@documind.example",
+      "roles": ["AUDITOR"],
+      "departments": [],
+      "active": true
+    },
+    {
+      "id": "visitor",
+      "email": "general@documind.example",
+      "roles": ["EMPLOYEE"],
+      "departments": [],
+      "active": true
+    },
+    {
+      "id": "inactive",
+      "email": "inactivo@documind.example",
+      "roles": ["EMPLOYEE"],
+      "departments": ["engineering"],
+      "active": false
+    }
+  ]
+}

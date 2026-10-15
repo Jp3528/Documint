@@ -4,8 +4,12 @@ Plataforma de conocimiento empresarial con ingestión documental, permisos y RAG
 El repositorio se llama **Documint**; el nombre del producto es **DocuMind AI**.
 
 El desarrollo sigue el plan 1.1 en nueve fases y 36 sesiones. La base incluye API,
-worker, interfaz de estado, servicios locales y comprobaciones automáticas. El seguimiento está en
+worker, interfaz de estado, servicios locales, corpus y proveedores fake. El seguimiento está en
 [docs/progress.md](docs/progress.md).
+
+Las [decisiones de arquitectura](docs/adr/0001-architecture.md), el
+[modelo de amenazas](docs/threat-model.md) y el [dataset sintético](evals/README.md) fijan los
+contratos de permisos y evidencia antes de habilitar búsqueda o generación.
 
 ## Requisitos
 
