@@ -2,10 +2,13 @@
 
 from typing import Literal
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from pydantic import BaseModel
 
 from packages import __version__
+from packages.config import Settings, get_settings
+
+from .readiness import ReadinessResponse, dependency_probes, evaluate
 
 
 class HealthResponse(BaseModel):
@@ -14,13 +17,25 @@ class HealthResponse(BaseModel):
     version: str = __version__
 
 
-def create_app() -> FastAPI:
+def create_app(settings: Settings | None = None) -> FastAPI:
     application = FastAPI(title="DocuMind AI", version=__version__)
+    probes = dependency_probes(settings or get_settings())
 
     @application.get("/health", response_model=HealthResponse, tags=["operations"])
     def health() -> HealthResponse:
-        """Process liveness only; dependency readiness is introduced in session 0B."""
+        """Process liveness only, independent of dependency availability."""
         return HealthResponse()
+
+    @application.get(
+        "/ready",
+        response_model=ReadinessResponse,
+        tags=["operations"],
+        responses={503: {"model": ReadinessResponse}},
+    )
+    def ready(response: Response) -> ReadinessResponse:
+        report = evaluate(probes)
+        response.status_code = 200 if report.status == "ready" else 503
+        return report
 
     return application
 

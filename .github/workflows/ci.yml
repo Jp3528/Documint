@@ -30,6 +30,32 @@ jobs:
       - run: uv run mypy
       - run: uv run pytest
 
+  infrastructure:
+    name: PostgreSQL, Redis and MinIO integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.11.16"
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --locked --dev
+      - run: docker compose up -d --build --wait --wait-timeout 120
+      - run: uv run alembic upgrade head
+      - run: uv run alembic upgrade head
+      - run: uv run python -m scripts.init_storage
+      - run: uv run pytest -m infrastructure
+        env:
+          DOCUMIND_TEST_INFRA: "1"
+      - if: failure()
+        run: docker compose logs --tail=80
+      - if: always()
+        run: docker compose down
+
   web:
     name: Web quality and build
     runs-on: ubuntu-24.04

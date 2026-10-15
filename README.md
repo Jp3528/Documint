@@ -3,8 +3,8 @@
 Plataforma de conocimiento empresarial con ingestión documental, permisos y RAG con evidencia.
 El repositorio se llama **Documint**; el nombre del producto es **DocuMind AI**.
 
-El desarrollo sigue el plan 1.1 en nueve fases y 36 sesiones. La primera entrega prepara API,
-worker, interfaz de estado y comprobaciones automáticas. El seguimiento está en
+El desarrollo sigue el plan 1.1 en nueve fases y 36 sesiones. La base incluye API,
+worker, interfaz de estado, servicios locales y comprobaciones automáticas. El seguimiento está en
 [docs/progress.md](docs/progress.md).
 
 ## Requisitos
@@ -12,7 +12,7 @@ worker, interfaz de estado y comprobaciones automáticas. El seguimiento está e
 - Python **3.12** y [uv](https://docs.astral.sh/uv/).
 - Node.js **22.12 o superior**; CI utiliza Node 22.
 - npm **11.6.2** para resolver las dependencias de workspaces de forma reproducible.
-- Redis será necesario para ejecutar un worker con broker real desde la sesión 0B.
+- Docker Engine con Compose v2 o posterior (Docker Desktop en Windows, contenedores Linux).
 
 ## Instalación
 
@@ -24,6 +24,32 @@ npx --yes npm@11.6.2 ci
 ```
 
 Las dependencias se fijan en `uv.lock` y `package-lock.json`. No se necesitan claves de IA.
+
+## Servicios locales
+
+Copia `.env.example` a `.env` si necesitas personalizar la configuración. API, worker y Alembic
+cargan ese archivo desde la raíz; las variables del proceso tienen prioridad. Los valores de
+ejemplo solo sirven para desarrollo. Los puertos se publican exclusivamente en `127.0.0.1`.
+
+```sh
+docker compose up -d --build --wait --wait-timeout 120
+uv run alembic upgrade head
+uv run python -m scripts.init_storage
+```
+
+La primera compilación de MinIO puede tardar varios minutos y necesita Internet. Se compila
+desde un commit oficial fijado porque la distribución comunitaria pasó a ser código fuente.
+Ver [infra/README.md](infra/README.md) para versiones, mantenimiento y limitaciones.
+
+| Servicio                 | Acceso desde el host     |
+| ------------------------ | ------------------------ |
+| PostgreSQL 17 / pgvector | `127.0.0.1:55432`        |
+| Redis / Celery           | `127.0.0.1:56379`        |
+| MinIO S3                 | `http://127.0.0.1:59000` |
+| Consola MinIO            | `http://127.0.0.1:59001` |
+
+`docker compose down` detiene los servicios conservando volúmenes. Evita `down -v` salvo que
+quieras borrar todos los datos de este entorno. Otros proyectos usan redes y volúmenes separados.
 
 ## Desarrollo
 
@@ -43,8 +69,9 @@ Abre `http://127.0.0.1:5173` y pulsa **Comprobar conexión**. Vite reenvía `/he
 no requiere configurar CORS para este flujo local. El contrato HTTP está en
 `http://127.0.0.1:8000/docs`.
 
-`GET /health` comprueba que el proceso de la API responde. No afirma que PostgreSQL, Redis o
-storage estén disponibles; el endpoint separado de readiness se incorpora en 0B.
+`GET /health` comprueba que el proceso de la API responde. `GET /ready` comprueba base de datos
+con migración y extensión vector, Redis y acceso al bucket privado. Devuelve 200 con todos
+disponibles o 503 con el estado de cada dependencia, sin detalles de conexión ni credenciales.
 
 ## Worker
 
@@ -61,8 +88,8 @@ uv run python -m scripts.worker_smoke
 ```
 
 El pool `solo` permite el smoke local en Windows. El despliegue del worker será Linux/Docker.
-Las variables de broker están documentadas en `.env.example`. Celery las lee del entorno del
-proceso; el archivo `.env` todavía no se carga automáticamente.
+Las variables de broker están documentadas en `.env.example`; Celery utiliza la configuración
+compartida y carga `.env` desde la raíz.
 
 ## Comprobaciones
 
@@ -88,6 +115,20 @@ npm run format:check
 La prueba de worker inicia un worker real en el proceso con transporte de memoria. Comprueba
 registro, serialización y ejecución; no equivale a verificar Redis. Todos los checks automáticos
 son independientes de un proveedor de IA.
+
+Con los servicios inicializados, ejecuta además la integración real:
+
+```sh
+# Bash
+DOCUMIND_TEST_INFRA=1 uv run pytest -m infrastructure
+# PowerShell (en dos comandos)
+$env:DOCUMIND_TEST_INFRA='1'
+uv run pytest -m infrastructure
+```
+
+Esta suite comprueba distancia pgvector, ida/vuelta binaria y borrado en MinIO, `/ready` y
+una tarea ejecutada por un worker a través de Redis. Se omite de forma explícita sin la variable;
+el job CI de infraestructura la ejecuta con los tres servicios reales desde una base vacía.
 
 ## Estructura
 

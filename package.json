@@ -15,8 +15,8 @@
     "lint": "npm run lint --workspace @documind/web",
     "typecheck": "npm run typecheck --workspace @documind/web",
     "test": "npm run test --workspace @documind/web",
-    "format": "prettier --write \"*.{json,md}\" \".github/**/*.{yml,yaml}\" \"apps/web/*.{js,ts,json,html}\" \"apps/web/src/**/*.{ts,tsx,css}\" \"docs/**/*.md\" \"{evals,infra,migrations}/**/*.{md,json,yml,yaml}\"",
-    "format:check": "prettier --check \"*.{json,md}\" \".github/**/*.{yml,yaml}\" \"apps/web/*.{js,ts,json,html}\" \"apps/web/src/**/*.{ts,tsx,css}\" \"docs/**/*.md\" \"{evals,infra,migrations}/**/*.{md,json,yml,yaml}\""
+    "format": "prettier --write \"*.{json,md,yml,yaml}\" \".github/**/*.{yml,yaml}\" \"apps/web/*.{js,ts,json,html}\" \"apps/web/src/**/*.{ts,tsx,css}\" \"docs/**/*.md\" \"{evals,infra,migrations}/**/*.{md,json,yml,yaml}\"",
+    "format:check": "prettier --check \"*.{json,md,yml,yaml}\" \".github/**/*.{yml,yaml}\" \"apps/web/*.{js,ts,json,html}\" \"apps/web/src/**/*.{ts,tsx,css}\" \"docs/**/*.md\" \"{evals,infra,migrations}/**/*.{md,json,yml,yaml}\""
   },
   "devDependencies": {
     "prettier": "^3.6.2"
