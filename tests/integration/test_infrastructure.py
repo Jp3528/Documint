@@ -4,6 +4,7 @@ import os
 from uuid import uuid4
 
 import pytest
+from alembic.script import ScriptDirectory
 from celery.contrib.testing.worker import start_worker
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
@@ -29,7 +30,10 @@ def test_migration_and_pgvector_distance() -> None:
     engine = make_engine(Settings())
     try:
         with engine.connect() as conn:
-            assert conn.scalar(text("SELECT version_num FROM alembic_version")) == "0001"
+            scripts = ScriptDirectory("migrations")
+            assert set(conn.scalars(text("SELECT version_num FROM alembic_version"))) == set(
+                scripts.get_heads()
+            )
             assert conn.scalar(text("SELECT '[1,2,3]'::vector <-> '[1,2,4]'::vector")) == 1.0
     finally:
         engine.dispose()

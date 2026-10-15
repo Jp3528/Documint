@@ -25,9 +25,12 @@ Desde la raíz del repositorio:
 ```sh
 uv sync --locked --dev
 npx --yes npm@11.6.2 ci
+uv run python -m scripts.init_env
 ```
 
 Las dependencias se fijan en `uv.lock` y `package-lock.json`. No se necesitan claves de IA.
+El último comando crea `.env` con una clave de firma aleatoria y privada; una clave existente
+se conserva. Nunca publiques ese archivo.
 
 ## Servicios locales
 
@@ -76,6 +79,38 @@ no requiere configurar CORS para este flujo local. El contrato HTTP está en
 `GET /health` comprueba que el proceso de la API responde. `GET /ready` comprueba base de datos
 con migración y extensión vector, Redis y acceso al bucket privado. Devuelve 200 con todos
 disponibles o 503 con el estado de cada dependencia, sin detalles de conexión ni credenciales.
+
+## Identidad y sesiones
+
+Después de migrar, crea las cuentas sintéticas solo si necesitas una demo local:
+
+```sh
+uv run python -m scripts.seed_demo --demo
+```
+
+Contraseña pública de todas las cuentas demo: **`DocumindDemo2026!`**. Los emails se encuentran
+en `evals/personas.json`; por ejemplo `admin@documind.example` e `ingenieria@documind.example`.
+El seed conserva cuentas existentes y rechaza `DOCUMIND_ENVIRONMENT=production`. En 1A se crean
+identidades; los roles y departamentos se asignan en 1B. `inactivo@documind.example` está desactivado.
+
+Para una cuenta local propia, usa entrada oculta de contraseña:
+
+```sh
+uv run python -m scripts.create_user --email usuario@documind.example --name "Usuario local"
+```
+
+| Endpoint             | Uso                                                                      |
+| -------------------- | ------------------------------------------------------------------------ |
+| `POST /auth/login`   | JSON `email` y `password`; devuelve access JWT y cookie refresh HttpOnly |
+| `POST /auth/refresh` | Rota el refresh de la cookie; un replay revoca su familia                |
+| `POST /auth/logout`  | Revoca la familia y elimina la cookie                                    |
+| `GET /me`            | Perfil con `Authorization: Bearer <access>`                              |
+
+Los POST requieren `X-DocuMind-CSRF: 1`. Si se envía Origin debe estar entre `DOCUMIND_WEB_ORIGINS`
+(lista JSON; por defecto ambos orígenes locales de Vite). El access dura cinco minutos; el
+refresh expira a siete días desde el login. Logout y desactivación bloquean el access vigente.
+Sin clave configurada, auth responde 503. Consulta [ADR 0006](docs/adr/0006-authentication.md).
+La interfaz de login se construye en 1C; la página actual sigue comprobando salud de la API.
 
 ## Worker
 

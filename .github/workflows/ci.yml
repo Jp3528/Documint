@@ -59,6 +59,7 @@ jobs:
       - run: docker compose up -d --build --wait --wait-timeout 120
       - run: uv run alembic upgrade head
       - run: uv run alembic upgrade head
+      - run: uv run alembic check
       - run: uv run python -m scripts.init_storage
       - run: uv run pytest -m infrastructure
         env:

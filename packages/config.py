@@ -1,8 +1,9 @@
 """Shared configuration. Environment overrides .env; defaults are local demo values."""
 
 from functools import lru_cache
+from typing import Literal
 
-from pydantic import SecretStr
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,6 +20,14 @@ class Settings(BaseSettings):
     s3_secret_key: SecretStr = SecretStr("documind-local-secret-only")
     s3_bucket: str = "documind-documents"
     s3_region: str = "us-east-1"
+    auth_secret: SecretStr | None = None
+    auth_issuer: str = "documind"
+    auth_audience: str = "documind-api"
+    access_ttl_seconds: int = Field(default=300, ge=60, le=900)
+    refresh_ttl_seconds: int = Field(default=604800, ge=3600, le=2592000)
+    cookie_secure: bool = False
+    web_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    environment: Literal["development", "test", "demo", "production"] = "development"
 
 
 @lru_cache
