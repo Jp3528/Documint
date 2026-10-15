@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "synthetic": true,
   "documents": [
     {
@@ -11,8 +11,8 @@
       "owner": "hr",
       "read_users": [],
       "read_roles": [],
-      "sha256": "97c7bf446ceca3affb219f10a22bdb1082e8e8d0655f7dc689c76eef901fa6ac",
-      "size_bytes": 1933,
+      "sha256": "8a79062ad6ac91af0f12309e2c2a8a253462cc0a4b85e1a2ad699820b7f5422d",
+      "size_bytes": 1928,
       "version": 1
     },
     {
@@ -24,8 +24,8 @@
       "owner": "km_eng",
       "read_users": [],
       "read_roles": [],
-      "sha256": "ed6148ce209f1a94bfd6b077ed440b4189dc0d3831e6f3f6600cd5c7f5afbed2",
-      "size_bytes": 1928,
+      "sha256": "b73a9f374fc2a9ce0dd6ecff4a0339ac110e47db27dc585b0096265f99a30073",
+      "size_bytes": 1924,
       "version": 1
     },
     {
@@ -37,8 +37,8 @@
       "owner": "km_eng",
       "read_users": [],
       "read_roles": [],
-      "sha256": "cff86ad95289ba0978e068d371e9f6667bd5bc55a5d785c552b057213c6344f7",
-      "size_bytes": 36869,
+      "sha256": "05864b6872f8fddcc06056e43eb727baee0fa5a89d7fc3f59ebcad73a1902844",
+      "size_bytes": 36864,
       "version": 1
     },
     {
@@ -50,8 +50,8 @@
       "owner": "hr",
       "read_users": [],
       "read_roles": [],
-      "sha256": "a543b02d44972abb62f6640929e27074c0bb6a7b72a124c5841a16596d069933",
-      "size_bytes": 36820,
+      "sha256": "fa821e93eca15cd4b309b306f48ef27cbbcb17ffe63dd6501a8c3d6239632112",
+      "size_bytes": 36816,
       "version": 1
     },
     {
@@ -63,8 +63,8 @@
       "owner": "finance",
       "read_users": [],
       "read_roles": [],
-      "sha256": "4f65e1c44d520f9089848a79a3a43958c57a4a98ccf2847730cdd8a8efcf4399",
-      "size_bytes": 354,
+      "sha256": "72c34145ff71e12e261415cf4b7ec15e881398528dac77cb85ff3e3f87205d52",
+      "size_bytes": 351,
       "version": 1
     },
     {
@@ -76,8 +76,8 @@
       "owner": "security_owner",
       "read_users": ["auditor_granted"],
       "read_roles": [],
-      "sha256": "c151a39416e3b8274d9a36347d48ab33c32e04c191c9c5c9f4a02d5a5e322c92",
-      "size_bytes": 425,
+      "sha256": "0400a48373414e13e1d44fb1fb65b6c798db02ecf32d03e42cfc085227110aeb",
+      "size_bytes": 422,
       "version": 1
     },
     {
@@ -89,8 +89,8 @@
       "owner": "hr",
       "read_users": [],
       "read_roles": [],
-      "sha256": "2d239b4f9718a53cd4d3e1325a224f4e029ed7bfcde6a93d43eea61c8ca90505",
-      "size_bytes": 333,
+      "sha256": "3041da5cf0c54d2f8e4254099f1a1ab415b093babeab307e5514774257fbb7c6",
+      "size_bytes": 330,
       "version": 1
     },
     {
@@ -102,8 +102,8 @@
       "owner": "km_eng",
       "read_users": [],
       "read_roles": [],
-      "sha256": "2277b5f5dc8bdf1496d8088412945dcb2c39f37819ff310f308613a06132130a",
-      "size_bytes": 308,
+      "sha256": "307d9eec99c86e887a9040b63b2d9e097e52b1578c451f46c6295568516bae12",
+      "size_bytes": 305,
       "version": 1
     }
   ]

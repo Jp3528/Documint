@@ -1,6 +1,6 @@
 {
-  "version": "1.0",
-  "notice": "Todos los nombres, cifras y procedimientos son ficticios. Solo para pruebas DocuMind.",
+  "version": "1.1",
+  "notice": "Todos los nombres, cifras y procedimientos son ficticios. Solo para pruebas Documint.",
   "documents": [
     {
       "id": "travel",
@@ -152,7 +152,10 @@
       "read_users": [],
       "read_roles": [],
       "sections": [
-        { "heading": "Ventana", "text": "La ventana de despliegue es los martes a las 14:00 UTC." },
+        {
+          "heading": "Ventana",
+          "text": "La ventana de despliegue es los martes a las 14:00 UTC."
+        },
         {
           "heading": "Rollback",
           "text": "El rollback restaura la etiqueta stable anterior y exige validar el healthcheck antes de reabrir tráfico."

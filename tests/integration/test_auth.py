@@ -52,14 +52,9 @@ class AuthHarness:
 
 
 @pytest.fixture
-def auth() -> Iterator[AuthHarness]:
+def auth(isolated_db: sessionmaker[Session]) -> Iterator[AuthHarness]:
     settings = Settings(auth_secret=SecretStr(secrets.token_urlsafe(48)))
-    engine = make_engine(settings)
-    connection = engine.connect()
-    transaction = connection.begin()
-    factory = sessionmaker(
-        bind=connection, expire_on_commit=False, join_transaction_mode="create_savepoint"
-    )
+    factory = isolated_db
     password = secrets.token_urlsafe(24)
     db = factory()
     email = f"test-{uuid4().hex}@documind.example"
@@ -80,9 +75,6 @@ def auth() -> Iterator[AuthHarness]:
             yield AuthHarness(client, db, password, user.id, email)
     finally:
         db.close()
-        transaction.rollback()
-        connection.close()
-        engine.dispose()
 
 
 def test_login_profile_cookie_hash_and_normalized_email(auth: AuthHarness) -> None:

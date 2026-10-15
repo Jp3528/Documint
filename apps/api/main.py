@@ -14,9 +14,11 @@ from starlette.middleware.base import RequestResponseEndpoint
 from packages import __version__
 from packages.config import Settings, get_settings
 from packages.database import make_engine
+from packages.identity.organization import ConflictError, ForbiddenError, NotFoundError
 
 from .auth import profile_router
 from .auth import router as auth_router
+from .organization import router as organization_router
 from .readiness import ReadinessResponse, dependency_probes, evaluate
 
 
@@ -38,11 +40,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         finally:
             engine.dispose()
 
-    application = FastAPI(title="DocuMind AI", version=__version__, lifespan=lifespan)
+    application = FastAPI(title="Documint", version=__version__, lifespan=lifespan)
     application.state.settings = config
     probes = dependency_probes(config)
     application.include_router(auth_router)
     application.include_router(profile_router)
+    application.include_router(organization_router)
+
+    @application.exception_handler(ForbiddenError)
+    async def forbidden(_request: Request, _exc: ForbiddenError) -> JSONResponse:
+        return JSONResponse({"detail": "Operación no permitida"}, status_code=403)
+
+    @application.exception_handler(NotFoundError)
+    async def not_found(_request: Request, _exc: NotFoundError) -> JSONResponse:
+        return JSONResponse({"detail": "Recurso no disponible"}, status_code=404)
+
+    @application.exception_handler(ConflictError)
+    async def conflict(_request: Request, exc: ConflictError) -> JSONResponse:
+        return JSONResponse({"detail": str(exc)}, status_code=409)
 
     @application.exception_handler(RequestValidationError)
     async def invalid_request(_request: Request, _exc: RequestValidationError) -> JSONResponse:
@@ -52,7 +67,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @application.middleware("http")
     async def protect_auth_cache(request: Request, call_next: RequestResponseEndpoint) -> Response:
         response = await call_next(request)
-        if request.url.path.startswith("/auth/") or request.url.path == "/me":
+        if (
+            request.url.path.startswith(("/auth/", "/admin/", "/departments"))
+            or request.url.path == "/me"
+        ):
             response.headers["Cache-Control"] = "no-store"
             response.headers["Pragma"] = "no-cache"
         return response

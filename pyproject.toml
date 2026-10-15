@@ -1,5 +1,5 @@
 [project]
-name = "documind-ai"
+name = "documint"
 version = "0.1.0"
 description = "Enterprise document knowledge platform with permission-aware RAG"
 readme = "README.md"

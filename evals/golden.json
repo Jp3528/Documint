@@ -1,6 +1,6 @@
 {
-  "version": "1.0",
-  "corpus_version": "1.0",
+  "version": "1.1",
+  "corpus_version": "1.1",
   "cases": [
     {
       "id": "q01",
@@ -10,7 +10,12 @@
       "reference_answer": "En un plazo de 7 días naturales después del viaje.",
       "expected_sources": ["travel"],
       "forbidden_sources": [],
-      "evidence": [{ "document_id": "travel", "quote": "7 días naturales" }]
+      "evidence": [
+        {
+          "document_id": "travel",
+          "quote": "7 días naturales"
+        }
+      ]
     },
     {
       "id": "q02",
@@ -20,7 +25,12 @@
       "reference_answer": "180 USD por noche.",
       "expected_sources": ["travel"],
       "forbidden_sources": [],
-      "evidence": [{ "document_id": "travel", "quote": "180 USD por noche" }]
+      "evidence": [
+        {
+          "document_id": "travel",
+          "quote": "180 USD por noche"
+        }
+      ]
     },
     {
       "id": "q03",
@@ -30,7 +40,12 @@
       "reference_answer": "En el canal #seguridad-demo.",
       "expected_sources": ["security"],
       "forbidden_sources": [],
-      "evidence": [{ "document_id": "security", "quote": "canal #seguridad-demo" }]
+      "evidence": [
+        {
+          "document_id": "security",
+          "quote": "canal #seguridad-demo"
+        }
+      ]
     },
     {
       "id": "q04",
@@ -40,7 +55,12 @@
       "reference_answer": "20 días laborables al año.",
       "expected_sources": ["benefits"],
       "forbidden_sources": [],
-      "evidence": [{ "document_id": "benefits", "quote": "20 días laborables" }]
+      "evidence": [
+        {
+          "document_id": "benefits",
+          "quote": "20 días laborables"
+        }
+      ]
     },
     {
       "id": "q05",
@@ -50,7 +70,12 @@
       "reference_answer": "45 minutos.",
       "expected_sources": ["runbook"],
       "forbidden_sources": [],
-      "evidence": [{ "document_id": "runbook", "quote": "RTO es de 45 minutos" }]
+      "evidence": [
+        {
+          "document_id": "runbook",
+          "quote": "RTO es de 45 minutos"
+        }
+      ]
     },
     {
       "id": "q06",
@@ -60,7 +85,12 @@
       "reference_answer": "Los martes a las 14:00 UTC.",
       "expected_sources": ["deploy"],
       "forbidden_sources": [],
-      "evidence": [{ "document_id": "deploy", "quote": "martes a las 14:00 UTC" }]
+      "evidence": [
+        {
+          "document_id": "deploy",
+          "quote": "martes a las 14:00 UTC"
+        }
+      ]
     },
     {
       "id": "q07",
@@ -70,7 +100,12 @@
       "reference_answer": "420000 PEN.",
       "expected_sources": ["finance"],
       "forbidden_sources": [],
-      "evidence": [{ "document_id": "finance", "quote": "420000 PEN" }]
+      "evidence": [
+        {
+          "document_id": "finance",
+          "quote": "420000 PEN"
+        }
+      ]
     },
     {
       "id": "q08",
@@ -80,7 +115,12 @@
       "reference_answer": "18 minutos.",
       "expected_sources": ["incident"],
       "forbidden_sources": [],
-      "evidence": [{ "document_id": "incident", "quote": "Atlas duró 18 minutos" }]
+      "evidence": [
+        {
+          "document_id": "incident",
+          "quote": "Atlas duró 18 minutos"
+        }
+      ]
     },
     {
       "id": "q09",
@@ -91,8 +131,14 @@
       "expected_sources": ["onboarding", "security"],
       "forbidden_sources": [],
       "evidence": [
-        { "document_id": "onboarding", "quote": "se activa la autenticación de dos factores" },
-        { "document_id": "security", "quote": "canal #seguridad-demo" }
+        {
+          "document_id": "onboarding",
+          "quote": "se activa la autenticación de dos factores"
+        },
+        {
+          "document_id": "security",
+          "quote": "canal #seguridad-demo"
+        }
       ]
     },
     {
@@ -104,8 +150,14 @@
       "expected_sources": ["runbook", "deploy"],
       "forbidden_sources": [],
       "evidence": [
-        { "document_id": "runbook", "quote": "RTO es de 45 minutos" },
-        { "document_id": "deploy", "quote": "etiqueta stable anterior" }
+        {
+          "document_id": "runbook",
+          "quote": "RTO es de 45 minutos"
+        },
+        {
+          "document_id": "deploy",
+          "quote": "etiqueta stable anterior"
+        }
       ]
     },
     {
@@ -117,8 +169,14 @@
       "expected_sources": ["benefits", "travel"],
       "forbidden_sources": [],
       "evidence": [
-        { "document_id": "benefits", "quote": "20 días laborables" },
-        { "document_id": "travel", "quote": "7 días naturales" }
+        {
+          "document_id": "benefits",
+          "quote": "20 días laborables"
+        },
+        {
+          "document_id": "travel",
+          "quote": "7 días naturales"
+        }
       ]
     },
     {
@@ -130,8 +188,14 @@
       "expected_sources": ["finance", "travel"],
       "forbidden_sources": [],
       "evidence": [
-        { "document_id": "finance", "quote": "420000 PEN" },
-        { "document_id": "travel", "quote": "180 USD por noche" }
+        {
+          "document_id": "finance",
+          "quote": "420000 PEN"
+        },
+        {
+          "document_id": "travel",
+          "quote": "180 USD por noche"
+        }
       ]
     },
     {

@@ -1,6 +1,6 @@
-# DocuMind AI
+# Documint
 
-El repositorio GitHub se llama Documint; el producto y el plan se llaman DocuMind AI.
+El producto y el repositorio GitHub se llaman Documint, sin sufijo AI ni IA.
 La referencia de trabajo es el plan por fases revisado a la versión 1.1 el 15 de octubre de 2026.
 
 ## Forma de trabajo

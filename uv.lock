@@ -311,7 +311,7 @@ wheels = [
 ]
 
 [[package]]
-name = "documind-ai"
+name = "documint"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

@@ -1,6 +1,6 @@
 # Despliegues de ingeniería
 
-Contenido ficticio de Lumen Demo para pruebas de DocuMind AI. No es una política real.
+Contenido ficticio de Lumen Demo para pruebas de Documint. No es una política real.
 
 ## Ventana
 

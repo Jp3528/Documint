@@ -4,13 +4,17 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, SecretStr, field_validator
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from packages.config import Settings
-from packages.identity.models import User
+from packages.identity.models import Department, DepartmentMember, User
+from packages.identity.organization import load_actor
+from packages.identity.policies import RoleName, capabilities
 from packages.identity.security import AuthConfigurationError, AuthenticationError
 from packages.identity.service import AuthService, IssuedSession
 
-from .dependencies import current_user, get_app_settings, get_auth_service
+from .dependencies import current_user, get_app_settings, get_auth_service, get_session
 
 COOKIE_NAME = "documind_refresh"
 
@@ -47,12 +51,46 @@ class TokenResponse(BaseModel):
     expires_in: int
 
 
+class ProfileDepartment(BaseModel):
+    id: UUID
+    code: str
+    name: str
+    membership_role: str
+
+
 class UserProfile(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
     email: str
     display_name: str
     status: Literal["ACTIVE", "INACTIVE"]
+    roles: list[RoleName] = Field(default_factory=list)
+    departments: list[ProfileDepartment] = Field(default_factory=list)
+    capabilities: dict[str, bool] = Field(default_factory=dict)
+
+
+def build_profile(user: User, db: Session) -> UserProfile:
+    actor = load_actor(db, user)
+    memberships = db.execute(
+        select(Department, DepartmentMember.membership_role)
+        .join(DepartmentMember, DepartmentMember.department_id == Department.id)
+        .where(DepartmentMember.user_id == user.id, Department.active.is_(True))
+        .order_by(Department.code)
+    )
+    return UserProfile(
+        id=user.id,
+        email=user.email,
+        display_name=user.display_name,
+        status=user.status,
+        roles=sorted(actor.roles),
+        capabilities=capabilities(actor),
+        departments=[
+            ProfileDepartment(
+                id=department.id, code=department.code, name=department.name, membership_role=role
+            )
+            for department, role in memberships
+        ],
+    )
 
 
 def token_response(issued: IssuedSession, response: Response, settings: Settings) -> TokenResponse:
@@ -130,5 +168,8 @@ def logout(
 
 
 @profile_router.get("/me", response_model=UserProfile)
-def profile(user: Annotated[User, Depends(current_user)]) -> UserProfile:
-    return UserProfile.model_validate(user)
+def profile(
+    user: Annotated[User, Depends(current_user)],
+    db: Annotated[Session, Depends(get_session)],
+) -> UserProfile:
+    return build_profile(user, db)

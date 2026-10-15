@@ -4,13 +4,13 @@ import argparse
 from pathlib import Path
 from uuid import NAMESPACE_URL, uuid5
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from evals.schema import Personas
 from packages.config import Settings, get_settings
 from packages.database import make_engine
-from packages.identity.models import User
+from packages.identity.models import Department, DepartmentMember, User, UserRole
 from packages.identity.security import hash_password
 
 # Public demo credential, documented in README. This is deliberately not a secret.
@@ -43,6 +43,34 @@ def seed_identities(db: Session, settings: Settings, people: Personas) -> int:
             )
         )
         created += 1
+    db.flush()
+    department_ids = {}
+    for code in sorted({code for person in people.personas for code in person.departments}):
+        department_id = uuid5(NAMESPACE_URL, f"https://documind.example/departments/{code}")
+        department_ids[code] = department_id
+        existing_department = db.scalar(select(Department).where(Department.code == code.upper()))
+        if existing_department:
+            if existing_department.id != department_id:
+                raise ValueError("demo department conflicts with an existing department")
+        else:
+            db.add(
+                Department(id=department_id, code=code.upper(), name=code.replace("_", " ").title())
+            )
+    db.flush()
+    for person in people.personas:
+        user_id = uuid5(NAMESPACE_URL, f"https://documind.example/personas/{person.id}")
+        # Explicit demo synchronization restores fixture permissions, but not passwords/statuses.
+        db.execute(delete(UserRole).where(UserRole.user_id == user_id))
+        db.execute(delete(DepartmentMember).where(DepartmentMember.user_id == user_id))
+        db.add_all(UserRole(user_id=user_id, role_name=role) for role in person.roles)
+        db.add_all(
+            DepartmentMember(
+                user_id=user_id,
+                department_id=department_ids[code],
+                membership_role="MANAGER" if "KNOWLEDGE_MANAGER" in person.roles else "MEMBER",
+            )
+            for code in person.departments
+        )
     db.commit()
     return created
 
@@ -56,7 +84,7 @@ def main() -> None:
     try:
         with Session(engine) as db:
             count = seed_identities(db, settings, demo_personas())
-        print(f"PASS: {count} synthetic identities created; existing credentials preserved")
+        print(f"PASS: {count} synthetic identities created; demo roles/memberships synchronized")
     finally:
         engine.dispose()
 

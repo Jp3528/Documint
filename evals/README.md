@@ -1,6 +1,6 @@
 # Evaluaciones
 
-`golden.json` versión 1.0 contiene 24 preguntas: 12 con respuesta (4 requieren dos fuentes),
+`golden.json` versión 1.1 contiene 24 preguntas: 12 con respuesta (4 requieren dos fuentes),
 6 sin evidencia en el corpus y 6 con evidencia que la persona no está autorizada a consultar.
 Cada caso identifica persona, fuentes esperadas/prohibidas y fragmentos de referencia cuando
 corresponde. Las respuestas restringidas deben abstenerse sin revelar existencia, títulos o datos.

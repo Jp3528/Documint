@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from packages.config import Settings
 from packages.identity.models import User
+from packages.identity.organization import OrganizationService, load_actor
 from packages.identity.security import AuthConfigurationError, AuthenticationError
 from packages.identity.service import AuthService
 
@@ -44,3 +45,10 @@ def current_user(
         ) from exc
     except AuthConfigurationError as exc:
         raise HTTPException(503, "Autenticación no disponible") from exc
+
+
+def get_organization_service(
+    user: Annotated[User, Depends(current_user)],
+    db: Annotated[Session, Depends(get_session)],
+) -> OrganizationService:
+    return OrganizationService(db, load_actor(db, user))

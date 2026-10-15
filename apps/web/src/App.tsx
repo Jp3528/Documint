@@ -30,13 +30,11 @@ export function App() {
         Ir al contenido
       </a>
       <header className="topbar">
-        <a className="brand" href="/" aria-label="DocuMind AI, inicio">
+        <a className="brand" href="/" aria-label="Documint, inicio">
           <span className="brand-mark" aria-hidden="true">
             D
           </span>
-          <span>
-            DocuMind <strong>AI</strong>
-          </span>
+          <span>Documint</span>
         </a>
         <span className="environment">Desarrollo local</span>
       </header>
@@ -48,8 +46,8 @@ export function App() {
           conocimiento y evidencia.
         </h1>
         <p className="intro">
-          Este entorno verifica el arranque de DocuMind AI. El proyecto avanzará hacia una
-          biblioteca documental y respuestas con fuentes verificables.
+          Este entorno verifica el arranque de Documint. El proyecto avanzará hacia una biblioteca
+          documental y respuestas con fuentes verificables.
         </p>
 
         <section className="connection" aria-labelledby="connection-title">
@@ -74,13 +72,13 @@ export function App() {
           </button>
           <p className="hint">
             La comprobación confirma que el proceso de la API responde. El estado de sus
-            dependencias se incorporará en la siguiente sesión.
+            dependencias se consulta por separado en el endpoint /ready.
           </p>
         </section>
 
         <footer className="footer">
-          <span>DocuMind AI</span>
-          <span>Fundación del proyecto · Sesión 0A</span>
+          <span>Documint</span>
+          <span>Entorno de desarrollo</span>
         </footer>
       </main>
     </>

@@ -1,3 +1,3 @@
-"""Shared DocuMind packages."""
+"""Shared Documint packages."""
 
 __version__ = "0.1.0"

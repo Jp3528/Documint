@@ -1,1 +1,1 @@
-"""DocuMind executable applications."""
+"""Documint executable applications."""

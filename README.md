@@ -1,7 +1,7 @@
-# DocuMind AI
+# Documint
 
 Plataforma de conocimiento empresarial con ingestión documental, permisos y RAG con evidencia.
-El repositorio se llama **Documint**; el nombre del producto es **DocuMind AI**.
+El nombre del producto y del repositorio es **Documint**.
 
 El desarrollo sigue el plan 1.1 en nueve fases y 36 sesiones. La base incluye API,
 worker, interfaz de estado, servicios locales, corpus y proveedores fake. El seguimiento está en
@@ -90,8 +90,8 @@ uv run python -m scripts.seed_demo --demo
 
 Contraseña pública de todas las cuentas demo: **`DocumindDemo2026!`**. Los emails se encuentran
 en `evals/personas.json`; por ejemplo `admin@documind.example` e `ingenieria@documind.example`.
-El seed conserva cuentas existentes y rechaza `DOCUMIND_ENVIRONMENT=production`. En 1A se crean
-identidades; los roles y departamentos se asignan en 1B. `inactivo@documind.example` está desactivado.
+El seed conserva contraseñas/estados existentes y sincroniza roles y memberships del manifiesto.
+Rechaza `DOCUMIND_ENVIRONMENT=production`. `inactivo@documind.example` está desactivado.
 
 Para una cuenta local propia, usa entrada oculta de contraseña:
 
@@ -111,6 +111,13 @@ Los POST requieren `X-DocuMind-CSRF: 1`. Si se envía Origin debe estar entre `D
 refresh expira a siete días desde el login. Logout y desactivación bloquean el access vigente.
 Sin clave configurada, auth responde 503. Consulta [ADR 0006](docs/adr/0006-authentication.md).
 La interfaz de login se construye en 1C; la página actual sigue comprobando salud de la API.
+
+`/me` incluye roles, departamentos activos y capabilities. ADMIN gestiona usuarios y roles en
+`/admin/users`, `/admin/roles` y `/admin/users/{id}/roles`; departamentos y memberships en
+`/departments` y `/departments/{id}/memberships`. Listas aceptan `offset` y `limit` (máximo 100).
+Consulta los contratos completos en `/docs` y la [matriz de acceso](docs/access-matrix.md).
+Para provisionar un administrador propio desde la terminal de confianza, añade `--role ADMIN`
+al comando `scripts.create_user`. Nunca se expone ese privilegio como registro público.
 
 ## Worker
 

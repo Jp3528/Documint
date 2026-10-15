@@ -19,7 +19,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "demo_corpus"
-NOTICE = "Contenido ficticio de Lumen Demo para pruebas de DocuMind AI. No es una política real."
+NOTICE = "Contenido ficticio de Lumen Demo para pruebas de Documint. No es una política real."
 
 
 def author_document(item: dict[str, Any]) -> None:
@@ -41,7 +41,7 @@ def author_document(item: dict[str, Any]) -> None:
         for section in sections:
             doc.add_heading(section["heading"], level=1)
             doc.add_paragraph(section["text"])
-        doc.core_properties.author = "DocuMind Demo"
+        doc.core_properties.author = "Documint Demo"
         doc.core_properties.created = doc.core_properties.modified = datetime(
             2026, 1, 1, tzinfo=UTC
         )
@@ -59,7 +59,7 @@ def author_document(item: dict[str, Any]) -> None:
                 ]
             )
         SimpleDocTemplate(
-            str(target), title=item["title"], author="DocuMind Demo", invariant=1
+            str(target), title=item["title"], author="Documint Demo", invariant=1
         ).build(flow)
     else:
         chunks = [f"# {item['title']}", NOTICE]

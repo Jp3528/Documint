@@ -9,7 +9,8 @@ from sqlalchemy.orm import Session
 
 from packages.config import get_settings
 from packages.database import make_engine
-from packages.identity.models import User
+from packages.identity.models import User, UserRole
+from packages.identity.policies import RoleName
 from packages.identity.security import hash_password
 
 
@@ -17,6 +18,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--email", required=True)
     parser.add_argument("--name", required=True)
+    parser.add_argument("--role", choices=[role.value for role in RoleName], default="EMPLOYEE")
     args = parser.parse_args()
     email = str(TypeAdapter(EmailStr).validate_python(args.email.strip().casefold()))
     name = args.name.strip()
@@ -31,7 +33,10 @@ def main() -> None:
         with Session(engine) as db:
             if db.scalar(select(User.id).where(User.email == email)) is not None:
                 raise SystemExit("El usuario ya existe; no se modificó su contraseña.")
-            db.add(User(email=email, display_name=name, password_hash=encoded))
+            user = User(email=email, display_name=name, password_hash=encoded)
+            db.add(user)
+            db.flush()
+            db.add(UserRole(user_id=user.id, role_name=args.role))
             db.commit()
         print("PASS: local user created")
     finally:
