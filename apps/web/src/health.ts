@@ -1,7 +1,7 @@
 export type ApiHealth = { status: "ok"; service: "documind-api"; version: string };
 
 export async function getApiHealth(signal?: AbortSignal): Promise<ApiHealth> {
-  const response = await fetch("/health", { signal, headers: { Accept: "application/json" } });
+  const response = await fetch("/api/health", { signal, headers: { Accept: "application/json" } });
   if (!response.ok) throw new Error("La API no está disponible.");
   const data: unknown = await response.json();
   if (

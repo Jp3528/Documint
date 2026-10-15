@@ -1,86 +1,238 @@
-import { useState } from "react";
-import { getApiHealth } from "./health";
+import { useEffect, useState } from "react";
+import {
+  BrowserRouter,
+  Navigate,
+  NavLink,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
+import { AuthProvider } from "./AuthProvider";
+import { DepartmentsPage, UsersPage } from "./AdminPages";
+import { HealthCard } from "./HealthCard";
+import { LoginPage } from "./LoginPage";
+import { errorMessage, roleLabels, type Profile } from "./api";
+import { useAuth } from "./auth-context";
 
-type Connection =
-  | { state: "idle" }
-  | { state: "loading" }
-  | { state: "connected"; version: string }
-  | { state: "error"; message: string };
-
-export function App() {
-  const [connection, setConnection] = useState<Connection>({ state: "idle" });
-
-  async function checkConnection() {
-    setConnection({ state: "loading" });
+function RequireSession() {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  if (loading)
+    return (
+      <div className="splash" role="status">
+        Recuperando sesión…
+      </div>
+    );
+  return user ? <Outlet /> : <Navigate to="/login" replace state={{ from: location.pathname }} />;
+}
+function RequireCapability({ capability }: { capability: keyof Profile["capabilities"] }) {
+  const { user } = useAuth();
+  return user?.capabilities[capability] ? (
+    <Outlet />
+  ) : (
+    <Navigate to="/" replace state={{ denied: true }} />
+  );
+}
+function Shell() {
+  const { user, logout } = useAuth();
+  const location = useLocation();
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    document.getElementById("page-title")?.focus();
+  }, [location.pathname]);
+  if (!user) return null;
+  async function close() {
+    setBusy(true);
+    setError("");
     try {
-      const health = await getApiHealth(AbortSignal.timeout(5000));
-      setConnection({ state: "connected", version: health.version });
-    } catch {
-      setConnection({
-        state: "error",
-        message:
-          "No se pudo conectar con la API. Comprueba que esté iniciada e inténtalo de nuevo.",
-      });
+      await logout();
+    } catch (cause) {
+      setError(errorMessage(cause));
+    } finally {
+      setBusy(false);
     }
   }
-
   return (
-    <>
+    <div className="workspace">
       <a className="skip-link" href="#content">
         Ir al contenido
       </a>
-      <header className="topbar">
-        <a className="brand" href="/" aria-label="Documint, inicio">
+      <aside className="sidebar">
+        <NavLink className="brand" to="/">
           <span className="brand-mark" aria-hidden="true">
             D
           </span>
-          <span>Documint</span>
-        </a>
-        <span className="environment">Desarrollo local</span>
-      </header>
-      <main id="content">
-        <p className="eyebrow">CONOCIMIENTO EMPRESARIAL</p>
-        <h1>
-          Una base para conectar
-          <br />
-          conocimiento y evidencia.
-        </h1>
-        <p className="intro">
-          Este entorno verifica el arranque de Documint. El proyecto avanzará hacia una biblioteca
-          documental y respuestas con fuentes verificables.
+          Documint
+        </NavLink>
+        <p className="sidebar-label">ESPACIO DE TRABAJO</p>
+        <nav className="main-nav" aria-label="Principal">
+          <NavLink to="/" end>
+            <span aria-hidden="true">⌂</span>Inicio
+          </NavLink>
+          {user.capabilities.manage_users && (
+            <NavLink to="/admin/users">
+              <span aria-hidden="true">◫</span>Usuarios
+            </NavLink>
+          )}
+          {user.capabilities.manage_departments && (
+            <NavLink to="/admin/departments">
+              <span aria-hidden="true">▤</span>Departamentos
+            </NavLink>
+          )}
+        </nav>
+        <div className="sidebar-footer">
+          <span className="small-dot" aria-hidden="true" />
+          Sesión activa
+        </div>
+      </aside>
+      <div className="workspace-body">
+        <header className="workspace-header">
+          <span className="header-label">Tu organización</span>
+          <div className="account">
+            <span className="avatar" aria-hidden="true">
+              {user.display_name.slice(0, 1)}
+            </span>
+            <span>{user.display_name}</span>
+            <button className="text-button" onClick={() => void close()} disabled={busy}>
+              {busy ? "Cerrando…" : "Cerrar sesión"}
+            </button>
+          </div>
+        </header>
+        <main id="content" className="workspace-main">
+          {error && (
+            <p role="alert" className="error-box">
+              {error}
+            </p>
+          )}
+          <Outlet />
+        </main>
+        <footer className="workspace-footer">Documint · Espacio de conocimiento</footer>
+      </div>
+    </div>
+  );
+}
+function HomePage() {
+  const { user } = useAuth();
+  const location = useLocation();
+  if (!user) return null;
+  return (
+    <>
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">TU ESPACIO</p>
+          <h1 id="page-title" tabIndex={-1}>
+            Hola, {user.display_name}.
+          </h1>
+          <p className="muted">Este es tu punto de partida en Documint.</p>
+        </div>
+        <span className="workspace-badge">Acceso personal</span>
+      </div>
+      {(location.state as { denied?: boolean } | null)?.denied && (
+        <p className="error-box" role="alert">
+          No tienes acceso a esa sección.
         </p>
-
-        <section className="connection" aria-labelledby="connection-title">
-          <div className="connection-header">
-            <div>
-              <p className="eyebrow">ESTADO DEL ENTORNO</p>
-              <h2 id="connection-title">Conexión con la API</h2>
-            </div>
-            <span className={`status-indicator ${connection.state}`} aria-hidden="true" />
-          </div>
-          <div className="status-message" role="status" aria-live="polite" aria-atomic="true">
-            {connection.state === "idle" && <p>Pendiente de comprobar.</p>}
-            {connection.state === "loading" && <p>Comprobando conexión…</p>}
-            {connection.state === "connected" && (
-              <p className="success">API conectada · versión {connection.version}</p>
-            )}
-            {connection.state === "error" && <p className="error">{connection.message}</p>}
-          </div>
-          <button type="button" onClick={checkConnection} disabled={connection.state === "loading"}>
-            {connection.state === "loading" ? "Comprobando…" : "Comprobar conexión"}
-            <span aria-hidden="true">↗</span>
-          </button>
-          <p className="hint">
-            La comprobación confirma que el proceso de la API responde. El estado de sus
-            dependencias se consulta por separado en el endpoint /ready.
+      )}
+      <section className="welcome-panel">
+        <div className="document-symbol" aria-hidden="true">
+          D
+        </div>
+        <div>
+          <p className="eyebrow">BIENVENIDO A DOCUMINT</p>
+          <h2>Un equipo. Un espacio compartido.</h2>
+          <p>
+            Consulta tu perfil y los departamentos a los que perteneces.
+            {user.capabilities.manage_users
+              ? " Desde Administración puedes gestionar las personas y sus accesos."
+              : " Tu administrador gestiona los permisos de tu cuenta."}
           </p>
+        </div>
+      </section>
+      <div className="dashboard-grid">
+        <section className="panel" aria-labelledby="profile-title">
+          <p className="eyebrow">IDENTIDAD</p>
+          <h2 id="profile-title">Tu perfil</h2>
+          <dl className="profile-details">
+            <div>
+              <dt>Correo</dt>
+              <dd>{user.email}</dd>
+            </div>
+            <div>
+              <dt>Responsabilidades</dt>
+              <dd>
+                {user.roles.map((role) => (
+                  <span className="tag" key={role}>
+                    {roleLabels[role]}
+                  </span>
+                ))}
+              </dd>
+            </div>
+          </dl>
         </section>
-
-        <footer className="footer">
-          <span>Documint</span>
-          <span>Entorno de desarrollo</span>
-        </footer>
-      </main>
+        <section className="panel" aria-labelledby="teams-title">
+          <p className="eyebrow">ORGANIZACIÓN</p>
+          <h2 id="teams-title">Tus departamentos</h2>
+          {user.departments.length ? (
+            <ul className="department-list">
+              {user.departments.map((department) => (
+                <li key={department.id}>
+                  <span className="department-icon" aria-hidden="true">
+                    ▤
+                  </span>
+                  <div>
+                    <strong>{department.name}</strong>
+                    <span>{department.code}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="muted">Tu cuenta no tiene departamentos asignados.</p>
+          )}
+        </section>
+        <HealthCard />
+      </div>
     </>
+  );
+}
+function MissingPage() {
+  return (
+    <section className="panel">
+      <h1 id="page-title" tabIndex={-1}>
+        Página no encontrada
+      </h1>
+      <p>La dirección no corresponde a una sección disponible.</p>
+      <NavLink to="/">Volver al inicio</NavLink>
+    </section>
+  );
+}
+
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<RequireSession />}>
+        <Route element={<Shell />}>
+          <Route index element={<HomePage />} />
+          <Route element={<RequireCapability capability="manage_users" />}>
+            <Route path="/admin/users" element={<UsersPage />} />
+          </Route>
+          <Route element={<RequireCapability capability="manage_departments" />}>
+            <Route path="/admin/departments" element={<DepartmentsPage />} />
+          </Route>
+          <Route path="*" element={<MissingPage />} />
+        </Route>
+      </Route>
+    </Routes>
+  );
+}
+export function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }

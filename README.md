@@ -4,7 +4,7 @@ Plataforma de conocimiento empresarial con ingestión documental, permisos y RAG
 El nombre del producto y del repositorio es **Documint**.
 
 El desarrollo sigue el plan 1.1 en nueve fases y 36 sesiones. La base incluye API,
-worker, interfaz de estado, servicios locales, corpus y proveedores fake. El seguimiento está en
+worker, interfaz autenticada y administrativa, servicios locales, corpus y proveedores fake. El seguimiento está en
 [docs/progress.md](docs/progress.md).
 
 Las [decisiones de arquitectura](docs/adr/0001-architecture.md), el
@@ -72,8 +72,10 @@ En otra terminal, inicia la web:
 npm run dev
 ```
 
-Abre `http://127.0.0.1:5173` y pulsa **Comprobar conexión**. Vite reenvía `/health` a la API;
-no requiere configurar CORS para este flujo local. El contrato HTTP está en
+Abre `http://localhost:5173` e inicia sesión con una cuenta local o demo. En **Inicio** puedes
+comprobar la conexión con la API. Vite reenvía `/api/*` a la API quitando ese prefijo y reescribe
+el path de la cookie a `/api/auth`; las rutas de React pueden recargarse directamente.
+No requiere configurar CORS para este flujo local. El contrato HTTP está en
 `http://127.0.0.1:8000/docs`.
 
 `GET /health` comprueba que el proceso de la API responde. `GET /ready` comprueba base de datos
@@ -110,7 +112,16 @@ Los POST requieren `X-DocuMind-CSRF: 1`. Si se envía Origin debe estar entre `D
 (lista JSON; por defecto ambos orígenes locales de Vite). El access dura cinco minutos; el
 refresh expira a siete días desde el login. Logout y desactivación bloquean el access vigente.
 Sin clave configurada, auth responde 503. Consulta [ADR 0006](docs/adr/0006-authentication.md).
-La interfaz de login se construye en 1C; la página actual sigue comprobando salud de la API.
+La web recupera la sesión desde la cookie al recargar y conserva el access token solo en memoria.
+Un único refresh atiende solicitudes concurrentes dentro de una pestaña. En navegadores con
+Web Locks, las operaciones de cookie también se coordinan entre pestañas. Logout solo vuelve
+al login cuando el servidor confirma la revocación; un fallo de conexión se muestra al usuario.
+
+La navegación muestra administración según las capabilities vigentes. ADMIN puede listar y
+crear usuarios, editar roles y estados, y listar/crear/activar departamentos. El servidor vuelve
+a comprobar permisos en cada operación. Los formularios tienen etiquetas, estados de error y
+foco visible; la interfaz se comprobó en escritorio y móvil. Evidencia en
+[sesión 1C](docs/sessions/1C.md).
 
 `/me` incluye roles, departamentos activos y capabilities. ADMIN gestiona usuarios y roles en
 `/admin/users`, `/admin/roles` y `/admin/users/{id}/roles`; departamentos y memberships en

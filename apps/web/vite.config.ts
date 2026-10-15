@@ -5,7 +5,13 @@ export default defineConfig({
   plugins: [react()],
   css: { postcss: { plugins: [] } },
   server: {
-    proxy: { "/health": "http://127.0.0.1:8000" },
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:8000",
+        rewrite: (path) => path.replace(/^\/api/, ""),
+        cookiePathRewrite: "/api/auth",
+      },
+    },
   },
   test: {
     environment: "jsdom",
