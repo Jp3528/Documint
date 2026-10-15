@@ -134,6 +134,16 @@ Esta suite comprueba distancia pgvector, ida/vuelta binaria y borrado en MinIO, 
 una tarea ejecutada por un worker a través de Redis. Se omite de forma explícita sin la variable;
 el job CI de infraestructura la ejecuta con los tres servicios reales desde una base vacía.
 
+Con Docker disponible, revisa también el historial confirmado antes de publicar:
+
+```sh
+uv run python -m scripts.secret_scan
+```
+
+El escaneo usa Gitleaks fijado, montaje de solo lectura y salida redactada; también corre en CI.
+Complementa la revisión humana de fixtures y documentación. Las estimaciones y condiciones de
+avance se conservan en [docs/planning.md](docs/planning.md).
+
 ## Estructura
 
 ```text
