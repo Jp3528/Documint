@@ -1,0 +1,24 @@
+{
+  "name": "documind-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@11.6.2",
+  "workspaces": [
+    "apps/web"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace @documind/web",
+    "build": "npm run build --workspace @documind/web",
+    "lint": "npm run lint --workspace @documind/web",
+    "typecheck": "npm run typecheck --workspace @documind/web",
+    "test": "npm run test --workspace @documind/web",
+    "format": "prettier --write \"*.{json,md}\" \".github/**/*.{yml,yaml}\" \"apps/web/*.{js,ts,json,html}\" \"apps/web/src/**/*.{ts,tsx,css}\" \"docs/**/*.md\" \"{evals,infra,migrations}/**/*.{md,json,yml,yaml}\"",
+    "format:check": "prettier --check \"*.{json,md}\" \".github/**/*.{yml,yaml}\" \"apps/web/*.{js,ts,json,html}\" \"apps/web/src/**/*.{ts,tsx,css}\" \"docs/**/*.md\" \"{evals,infra,migrations}/**/*.{md,json,yml,yaml}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}
