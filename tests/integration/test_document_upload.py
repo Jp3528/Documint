@@ -438,3 +438,45 @@ def test_department_visibility_scopes_and_inactive_department_behavior(
     assert h.client.get(url, headers=employee).status_code == 404
     assert h.client.get(url, headers=owner).status_code == 200
     assert h.client.patch(url, headers=owner, json={"archived": True}).status_code == 200
+
+
+def test_database_reservation_failure_never_writes_storage(
+    uploads: UploadHarness, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def interrupted(db: Session) -> None:
+        raise SQLAlchemyError("simulated reservation failure")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(Session, "commit", interrupted)
+        response = uploads.client.post(
+            "/documents", headers=uploads.headers["owner"], files={"file": ("valid.txt", b"valid")}
+        )
+    assert response.status_code == 503 and not uploads.storage.keys
+    with uploads.factory() as db:
+        assert db.scalar(select(func.count()).select_from(Document)) == 0
+        assert db.scalar(select(func.count()).select_from(ProcessingJob)) == 0
+
+
+@pytest.mark.parametrize(
+    "body,status",
+    [
+        (b"invalid multipart", 400),
+        (
+            b'--test\r\nContent-Disposition: form-data; name="file"; '
+            b'filename="cut.txt"\r\n\r\npartial',
+            422,
+        ),
+    ],
+)
+def test_malformed_or_truncated_multipart_leaves_no_original_or_job(
+    uploads: UploadHarness, body: bytes, status: int
+) -> None:
+    response = uploads.client.post(
+        "/documents",
+        headers={**uploads.headers["owner"], "Content-Type": "multipart/form-data; boundary=test"},
+        content=body,
+    )
+    assert response.status_code == status and not uploads.storage.keys
+    with uploads.factory() as db:
+        assert db.scalar(select(func.count()).select_from(Document)) == 0
+        assert db.scalar(select(func.count()).select_from(ProcessingJob)) == 0
