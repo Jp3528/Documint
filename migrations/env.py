@@ -2,14 +2,15 @@ from alembic import context
 
 from packages.config import get_settings
 from packages.database import make_engine
-from packages.identity.models import User
+from packages.documents.models import Document
+from packages.identity.models import User  # noqa: F401
 
 settings = get_settings()
 
 if context.is_offline_mode():
     context.configure(
         url=settings.database_url.get_secret_value(),
-        target_metadata=User.metadata,
+        target_metadata=Document.metadata,
         literal_binds=True,
     )
     with context.begin_transaction():
@@ -18,7 +19,7 @@ else:
     engine = make_engine(settings)
     try:
         with engine.connect() as connection:
-            context.configure(connection=connection, target_metadata=User.metadata)
+            context.configure(connection=connection, target_metadata=Document.metadata)
             with context.begin_transaction():
                 context.run_migrations()
     finally:

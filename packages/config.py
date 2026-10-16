@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     cookie_secure: bool = False
     web_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
     environment: Literal["development", "test", "demo", "production"] = "development"
+    upload_max_bytes: int = Field(default=20 * 1024 * 1024, ge=1, le=100 * 1024 * 1024)
+    docx_max_expanded_bytes: int = Field(default=50 * 1024 * 1024, ge=1, le=200 * 1024 * 1024)
 
 
 @lru_cache

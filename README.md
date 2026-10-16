@@ -130,6 +130,25 @@ Consulta los contratos completos en `/docs` y la [matriz de acceso](docs/access-
 Para provisionar un administrador propio desde la terminal de confianza, añade `--role ADMIN`
 al comando `scripts.create_user`. Nunca se expone ese privilegio como registro público.
 
+## Carga de documentos
+
+`POST /documents` recibe multipart con un único campo archivo `file` y bearer ADMIN/KM.
+Acepta PDF, DOCX, TXT y MD validados por contenido; el límite predeterminado es 20 MiB.
+`DOCUMIND_UPLOAD_MAX_BYTES` y `DOCUMIND_DOCX_MAX_EXPANDED_BYTES` ajustan los presupuestos.
+La respuesta incluye IDs, SHA-256, tamaño, MIME detectado y estado UPLOADED. El original queda
+en el bucket privado, con una key generada por el servidor y visibilidad RESTRICTED.
+
+`GET /documents/{document_id}/versions/{version_id}` devuelve metadata al owner o ADMIN.
+UPLOADED aún no implica procesamiento ni búsqueda. Las reservas interrumpidas se recuperan con:
+
+```sh
+uv run python -m scripts.reconcile_uploads
+```
+
+El comando solo procesa reservas de al menos cinco minutos y conserva metadata ante fallos;
+no elimina versiones publicadas. Ver [ADR 0007](docs/adr/0007-upload-originals.md) y
+[evidencia 2A](docs/sessions/2A.md).
+
 ## Worker
 
 Con Redis disponible, inicia un worker en otra terminal:

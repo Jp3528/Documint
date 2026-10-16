@@ -6,10 +6,12 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session, sessionmaker
 
 from packages.config import Settings
+from packages.documents.service import DocumentService
 from packages.identity.models import User
 from packages.identity.organization import OrganizationService, load_actor
 from packages.identity.security import AuthConfigurationError, AuthenticationError
 from packages.identity.service import AuthService
+from packages.storage import ObjectStorage, S3Storage
 
 bearer = HTTPBearer(auto_error=False)
 
@@ -52,3 +54,15 @@ def get_organization_service(
     db: Annotated[Session, Depends(get_session)],
 ) -> OrganizationService:
     return OrganizationService(db, load_actor(db, user))
+
+
+def get_object_storage(settings: Annotated[Settings, Depends(get_app_settings)]) -> ObjectStorage:
+    return S3Storage(settings)
+
+
+def get_document_service(
+    user: Annotated[User, Depends(current_user)],
+    db: Annotated[Session, Depends(get_session)],
+    storage: Annotated[ObjectStorage, Depends(get_object_storage)],
+) -> DocumentService:
+    return DocumentService(db, load_actor(db, user), storage)

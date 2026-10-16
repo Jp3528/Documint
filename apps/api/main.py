@@ -18,8 +18,10 @@ from packages.identity.organization import ConflictError, ForbiddenError, NotFou
 
 from .auth import profile_router
 from .auth import router as auth_router
+from .documents import router as documents_router
 from .organization import router as organization_router
 from .readiness import ReadinessResponse, dependency_probes, evaluate
+from .upload_limit import UploadLimitMiddleware
 
 
 class HealthResponse(BaseModel):
@@ -46,6 +48,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(auth_router)
     application.include_router(profile_router)
     application.include_router(organization_router)
+    application.include_router(documents_router)
+    application.add_middleware(UploadLimitMiddleware, max_bytes=config.upload_max_bytes)
 
     @application.exception_handler(ForbiddenError)
     async def forbidden(_request: Request, _exc: ForbiddenError) -> JSONResponse:
@@ -68,7 +72,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def protect_auth_cache(request: Request, call_next: RequestResponseEndpoint) -> Response:
         response = await call_next(request)
         if (
-            request.url.path.startswith(("/auth/", "/admin/", "/departments"))
+            request.url.path.startswith(("/auth/", "/admin/", "/departments", "/documents"))
             or request.url.path == "/me"
         ):
             response.headers["Cache-Control"] = "no-store"
