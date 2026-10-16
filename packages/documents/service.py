@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from packages.identity.organization import ForbiddenError, NotFoundError
 from packages.identity.policies import Action, Actor, permits
+from packages.processing.enqueue import ensure_job
 from packages.storage import ObjectStorage
 
 from .access import document_access
@@ -25,8 +26,11 @@ class UploadUnavailable(Exception):
 
 
 class DocumentService:
-    def __init__(self, db: Session, actor: Actor, storage: ObjectStorage) -> None:
+    def __init__(
+        self, db: Session, actor: Actor, storage: ObjectStorage, pipeline_key: str = "text-v1"
+    ) -> None:
         self.db, self.actor, self.storage = db, actor, storage
+        self.pipeline_key = pipeline_key
 
     def require_upload(self) -> None:
         if not permits(self.actor, Action.MANAGE_KNOWLEDGE):
@@ -69,6 +73,7 @@ class DocumentService:
             raise UploadUnavailable from exc
         version.status = "UPLOADED"
         try:
+            ensure_job(self.db, version.id, self.pipeline_key)
             self.db.commit()
         except SQLAlchemyError as exc:
             self.db.rollback()  # Reservation remains UPLOADING and can be reconciled.
@@ -112,7 +117,9 @@ class DocumentService:
         return self.store_original(document, upload, number + 1)
 
 
-def reconcile_upload(db: Session, storage: ObjectStorage, version: DocumentVersion) -> str:
+def reconcile_upload(
+    db: Session, storage: ObjectStorage, version: DocumentVersion, pipeline_key: str = "text-v1"
+) -> str:
     """Trusted maintenance only; a missing object is distinct from a transient S3 failure."""
     if version.status != "UPLOADING":
         raise ValueError("only pending upload reservations can be reconciled")
@@ -128,6 +135,7 @@ def reconcile_upload(db: Session, storage: ObjectStorage, version: DocumentVersi
             and hashlib.sha256(content).hexdigest() == version.sha256
         ):
             version.status, version.error_code = "UPLOADED", None
+            ensure_job(db, version.id, pipeline_key)
         else:
             version.status, version.error_code = "UPLOAD_FAILED", "STORAGE_INTEGRITY_FAILED"
     db.commit()

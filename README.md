@@ -168,7 +168,7 @@ no elimina versiones publicadas. Ver [ADR 0007](docs/adr/0007-upload-originals.m
 Con Redis disponible, inicia un worker en otra terminal:
 
 ```sh
-uv run celery -A apps.worker.celery_app:celery_app worker --pool=solo --loglevel=INFO
+uv run celery -A apps.worker.celery_app:celery_app worker --pool=solo --queues=celery,documind.processing --loglevel=INFO
 ```
 
 Despacha y verifica una tarea por el broker:
@@ -180,6 +180,20 @@ uv run python -m scripts.worker_smoke
 El pool `solo` permite el smoke local en Windows. El despliegue del worker será Linux/Docker.
 Las variables de broker están documentadas en `.env.example`; Celery utiliza la configuración
 compartida y carga `.env` desde la raíz.
+
+En otra terminal, publica los jobs de procesamiento persistidos:
+
+```sh
+uv run python -m scripts.dispatch_jobs --watch
+```
+
+Sin `--watch` publica una sola tanda. Cada original almacenado tiene un job único por
+versión/pipeline, incluso si Redis no estaba disponible durante la carga. El dispatcher limita
+reintentos de broker; el worker actual deja WAITING_PIPELINE, con cero intentos de procesamiento,
+hasta conectar la fase 3. No marca READY. La web permite consultar estado y reintentar fallos
+autorizados. GET/POST de `/documents/{document_id}/versions/{version_id}/jobs` consulta/solicita
+el job; POST de `/documents/{document_id}/jobs/{job_id}/retry` reintenta el mismo UUID.
+Ver [ADR 0008](docs/adr/0008-processing-outbox.md).
 
 ## Comprobaciones
 

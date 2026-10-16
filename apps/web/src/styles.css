@@ -938,6 +938,16 @@ td strong {
   cursor: pointer;
   font-weight: 600;
 }
+.processing-panel {
+  padding: 18px;
+  margin: 24px 0;
+  border-radius: 12px;
+  background: #f5f8f7;
+  border: 1px solid #dfe8e4;
+}
+.processing-panel h3 {
+  margin-top: 0;
+}
 .version-upload .upload-form {
   margin-top: 18px;
 }

@@ -64,5 +64,6 @@ def get_document_service(
     user: Annotated[User, Depends(current_user)],
     db: Annotated[Session, Depends(get_session)],
     storage: Annotated[ObjectStorage, Depends(get_object_storage)],
+    settings: Annotated[Settings, Depends(get_app_settings)],
 ) -> LibraryService:
-    return LibraryService(db, load_actor(db, user), storage)
+    return LibraryService(db, load_actor(db, user), storage, settings.processing_pipeline_key)

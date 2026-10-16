@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     environment: Literal["development", "test", "demo", "production"] = "development"
     upload_max_bytes: int = Field(default=20 * 1024 * 1024, ge=1, le=100 * 1024 * 1024)
     docx_max_expanded_bytes: int = Field(default=50 * 1024 * 1024, ge=1, le=200 * 1024 * 1024)
+    processing_pipeline_key: str = Field(default="text-v1", min_length=1, max_length=128)
 
 
 @lru_cache

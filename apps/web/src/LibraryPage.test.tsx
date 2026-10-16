@@ -102,6 +102,7 @@ it("shows read-only version history and reports revoked original access", async 
     "fetch",
     vi.fn(async (path: string) => {
       if (path.endsWith("/original")) return json({ detail: "unavailable" }, 404);
+      if (path.includes("/jobs?")) return json(page([]));
       if (path.includes("/versions?")) return json(page([version]));
       if (path === `/api/documents/${documentId}`) return json(item);
       return json(page([item]));

@@ -58,7 +58,7 @@ def main() -> None:
                         clean_failed_upload(db, storage, version)
                         cleaned += 1
                         continue
-                    state = reconcile_upload(db, storage, version)
+                    state = reconcile_upload(db, storage, version, settings.processing_pipeline_key)
                 except (BotoCoreError, ClientError, OSError):
                     db.rollback()
                     deferred += 1

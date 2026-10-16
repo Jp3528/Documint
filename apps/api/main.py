@@ -20,6 +20,7 @@ from .auth import profile_router
 from .auth import router as auth_router
 from .documents import router as documents_router
 from .organization import router as organization_router
+from .processing import router as processing_router
 from .readiness import ReadinessResponse, dependency_probes, evaluate
 from .upload_limit import UploadLimitMiddleware
 
@@ -49,6 +50,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(profile_router)
     application.include_router(organization_router)
     application.include_router(documents_router)
+    application.include_router(processing_router)
     application.add_middleware(UploadLimitMiddleware, max_bytes=config.upload_max_bytes)
 
     @application.exception_handler(ForbiddenError)

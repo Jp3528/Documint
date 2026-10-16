@@ -19,6 +19,16 @@ def create_celery_app(settings: Settings) -> Celery:
         timezone="UTC",
         enable_utc=True,
         broker_connection_retry_on_startup=True,
+        broker_connection_timeout=2,
+        task_publish_retry=False,
+        worker_prefetch_multiplier=1,
+        task_routes={"documind.process_document": {"queue": "documind.processing"}},
+        result_expires=3600,
+        broker_transport_options={
+            "socket_connect_timeout": 2,
+            "socket_timeout": 2,
+            "visibility_timeout": 300,
+        },
     )
     return application
 

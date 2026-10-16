@@ -10,6 +10,7 @@ import {
   type LibraryDocument,
 } from "./documents";
 import { useResource } from "./useResource";
+import { ProcessingPanel } from "./ProcessingPanel";
 
 const documentsPage = pageSchema(documentSchema),
   versionsPage = pageSchema(versionSchema),
@@ -258,6 +259,13 @@ function DocumentDetails({
                 {item.archived ? "Restaurar documento" : "Archivar documento"}
               </button>
             </>
+          )}
+          {item.latest_version && (
+            <ProcessingPanel
+              documentId={id}
+              versionId={item.latest_version.version_id}
+              canManage={item.can_manage}
+            />
           )}
           <h3>Versiones originales</h3>
           <p className="muted">

@@ -21,6 +21,7 @@ from packages.documents.models import Document, DocumentVersion
 from packages.documents.service import clean_failed_upload, reconcile_upload
 from packages.identity.models import User, UserRole
 from packages.identity.security import hash_password
+from packages.processing.models import ProcessingJob
 from packages.storage import S3Storage
 
 pytestmark = [
@@ -131,6 +132,14 @@ def test_all_corpus_formats_round_trip_with_real_private_s3(uploads: UploadHarne
             )
             assert (
                 path.name not in version.object_key and h.storage.get(version.object_key) == content
+            )
+            assert (
+                db.scalar(
+                    select(func.count())
+                    .select_from(ProcessingJob)
+                    .where(ProcessingJob.version_id == version.id)
+                )
+                == 1
             )
 
 
