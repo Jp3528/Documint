@@ -3,7 +3,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -34,6 +34,14 @@ class Settings(BaseSettings):
     parser_max_characters: int = Field(default=2_000_000, ge=1, le=20_000_000)
     parser_max_blocks: int = Field(default=10_000, ge=1, le=100_000)
     parser_max_pdf_pages: int = Field(default=1000, ge=1, le=10_000)
+    chunk_max_characters: int = Field(default=1200, ge=8, le=12000)
+    chunk_overlap_characters: int = Field(default=150, ge=0)
+
+    @model_validator(mode="after")
+    def valid_chunk_overlap(self) -> "Settings":
+        if self.chunk_overlap_characters >= self.chunk_max_characters:
+            raise ValueError("chunk overlap must be smaller than chunk size")
+        return self
 
 
 @lru_cache

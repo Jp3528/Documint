@@ -12,8 +12,8 @@ from botocore.exceptions import EndpointConnectionError
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
 from pypdf import PdfWriter
-from sqlalchemy import func, select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import delete, func, select, update
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
 from apps.api.dependencies import get_object_storage, get_session
@@ -22,11 +22,16 @@ from packages.config import Settings
 from packages.documents.models import Document, DocumentVersion
 from packages.documents.service import clean_failed_upload, reconcile_upload
 from packages.identity.models import User, UserRole
+from packages.identity.organization import ConflictError
 from packages.identity.security import hash_password
+from packages.indexing.chunking import ChunkConfig, EmbeddingProfile
+from packages.indexing.models import ChunkEmbedding, IndexChunk, IndexRevision
+from packages.indexing.service import IndexService
 from packages.parsers.contracts import ParserError
 from packages.parsers.models import Extraction
 from packages.parsers.service import ExtractionService
 from packages.processing.models import ProcessingJob
+from packages.providers.fake import FakeEmbeddingProvider
 from packages.storage import S3Storage
 
 pytestmark = [
@@ -573,3 +578,121 @@ def test_cached_extraction_is_checked_for_content_integrity(uploads: UploadHarne
         db.commit()
         with pytest.raises(ParserError, match="EXTRACTION_INTEGRITY_FAILED"):
             service.extract_version(version_id)
+
+
+def test_revision_activation_requires_complete_vectors_and_preserves_old_evidence(
+    uploads: UploadHarness,
+) -> None:
+    h = uploads
+    content = b"Knowledge needs verifiable evidence. " * 20
+    created = h.client.post(
+        "/documents", headers=h.headers["owner"], files={"file": ("index.txt", content)}
+    )
+    assert created.status_code == 201
+    version_id = UUID(created.json()["version_id"])
+    provider = FakeEmbeddingProvider()
+    profile = EmbeddingProfile(
+        name=provider.model.name, revision=provider.model.revision, mode="FAKE", dimensions=16
+    )
+    with h.factory() as db:
+        service = IndexService(db, h.storage, Settings())
+        first = service.prepare(
+            version_id, ChunkConfig(max_characters=64, overlap_characters=8), profile
+        )
+        assert (
+            service.prepare(
+                version_id, ChunkConfig(max_characters=64, overlap_characters=8), profile
+            ).id
+            == first.id
+        )
+        chunks = list(
+            db.scalars(
+                select(IndexChunk)
+                .where(IndexChunk.index_revision_id == first.id)
+                .order_by(IndexChunk.position)
+            )
+        )
+        evidence = [(chunk.id, chunk.text, chunk.sha256, chunk.spans) for chunk in chunks]
+        with pytest.raises(ConflictError):
+            service.activate(first.id)
+        with pytest.raises(IntegrityError), db.begin_nested():
+            db.execute(
+                update(IndexRevision)
+                .where(IndexRevision.id == first.id)
+                .values(status="READY", indexed_count=first.chunk_count)
+            )
+        vectors = provider.embed([chunk.text for chunk in chunks]).vectors
+        db.add_all(
+            ChunkEmbedding(chunk_id=chunk.id, dimensions=16, embedding=list(vector))
+            for chunk, vector in zip(chunks, vectors, strict=True)
+        )
+        db.commit()
+        assert service.activate(first.id)
+        for operation in [
+            update(IndexChunk).where(IndexChunk.id == chunks[0].id).values(text="forged"),
+            delete(IndexChunk).where(IndexChunk.id == chunks[0].id),
+        ]:
+            with pytest.raises(IntegrityError), db.begin_nested():
+                db.execute(operation)
+        newer = service.prepare(
+            version_id, ChunkConfig(max_characters=96, overlap_characters=12), profile
+        )
+        document = db.get(Document, UUID(created.json()["document_id"]))
+        assert document and document.active_index_revision_id == first.id
+        newer_chunks = list(
+            db.scalars(
+                select(IndexChunk)
+                .where(IndexChunk.index_revision_id == newer.id)
+                .order_by(IndexChunk.position)
+            )
+        )
+        vectors = provider.embed([chunk.text for chunk in newer_chunks]).vectors
+        db.add_all(
+            ChunkEmbedding(chunk_id=chunk.id, dimensions=16, embedding=list(vector))
+            for chunk, vector in zip(newer_chunks, vectors, strict=True)
+        )
+        db.commit()
+        assert service.activate(newer.id)
+        assert not service.activate(first.id)
+        assert document.active_index_revision_id == newer.id
+        old = list(
+            db.scalars(
+                select(IndexChunk)
+                .where(IndexChunk.index_revision_id == first.id)
+                .order_by(IndexChunk.position)
+            )
+        )
+        assert [(chunk.id, chunk.text, chunk.sha256, chunk.spans) for chunk in old] == evidence
+        other = Document(owner_id=document.owner_id, title="Other document fixture")
+        db.add(other)
+        db.commit()
+        with pytest.raises(IntegrityError), db.begin_nested():
+            db.execute(
+                update(Document)
+                .where(Document.id == other.id)
+                .values(active_index_revision_id=first.id)
+            )
+
+
+@pytest.mark.parametrize("vector,dimensions", [([0.0] * 16, 16), ([1.0] * 16, 15)])
+def test_invalid_vectors_cannot_enter_the_physical_index(
+    uploads: UploadHarness, vector: list[float], dimensions: int
+) -> None:
+    h = uploads
+    created = h.client.post(
+        "/documents",
+        headers=h.headers["owner"],
+        files={"file": ("index.txt", b"verifiable knowledge")},
+    )
+    assert created.status_code == 201
+    with h.factory() as db:
+        revision = IndexService(db, h.storage, Settings()).prepare(
+            UUID(created.json()["version_id"]),
+            ChunkConfig(),
+            EmbeddingProfile(name="fake-sha256", revision="1", mode="FAKE", dimensions=16),
+        )
+        chunk = db.scalar(select(IndexChunk).where(IndexChunk.index_revision_id == revision.id))
+        assert chunk
+        with pytest.raises(IntegrityError), db.begin_nested():
+            db.add(ChunkEmbedding(chunk_id=chunk.id, dimensions=dimensions, embedding=vector))
+            db.flush()

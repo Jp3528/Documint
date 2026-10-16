@@ -282,3 +282,12 @@ infra/            Servicios y despliegue, desde 0B
 [CI](https://github.com/Jp3528/Documint/actions/workflows/ci.yml) ejecuta los mismos checks en cada
 push y pull request, con permisos de lectura. Se ampliará conforme existan migraciones,
 infraestructura y reglas de seguridad. El empaquetado de producción corresponde a la fase 8.
+
+## Fragmentos y revisión de índice
+
+`uv run python -m scripts.chunk_job <job_id>` prepara fragmentos inmutables con spans y
+presupuesto/overlap en caracteres. Reserva una revisión con perfil FAKE, sin generar vectores.
+Los valores se ajustan con `DOCUMIND_CHUNK_MAX_CHARACTERS` y `DOCUMIND_CHUNK_OVERLAP_CHARACTERS`.
+La revisión queda CHUNKED, esperando el runner de 3C. La activación interna exige todos los
+vectores y dimensiones reconciliados; cambiar configuración conserva revisiones y evidencia
+anteriores. Ver [ADR 0010](docs/adr/0010-index-revisions.md).

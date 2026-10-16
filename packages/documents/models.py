@@ -36,6 +36,9 @@ class Document(Base):
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     archived: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    active_index_revision_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("index_revisions.id", name="fk_documents_active_index_revision", use_alter=True)
+    )
 
 
 class DocumentVersion(Base):

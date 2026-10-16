@@ -19,6 +19,8 @@ class Base(DeclarativeBase):
 
 
 def make_engine(settings: Settings) -> Engine:
+    from packages import model_registry  # noqa: F401
+
     return create_engine(
         settings.database_url.get_secret_value(),
         pool_pre_ping=True,
