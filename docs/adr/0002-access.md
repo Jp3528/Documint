@@ -7,6 +7,19 @@ El owner y los grants READ/MANAGE conceden lectura explícita. COMPANY concede l
 activos con rol funcional; DEPARTMENT exige membership vigente; RESTRICTED exige owner,
 ADMIN o grant explícito. MANAGE incluye READ. KNOWLEDGE_MANAGER no obtiene un bypass global.
 
+Desde 2B, owner, ADMIN y grants MANAGE pueden editar metadata, versionar, archivar y gestionar
+grants del documento. Un KM también puede gestionar COMPANY/DEPARTMENT de sus departamentos
+activos; esa facultad implícita no se aplica a RESTRICTED. READ sobre un documento restringido
+no convierte al KM en gestor. Un grant MANAGE habilita escritura sobre ese documento aun sin
+capability global de carga; crear documentos nuevos sigue reservado a ADMIN/KM.
+
+Los grants identifican exactamente un usuario o rol, con permiso READ/MANAGE y unicidad por
+documento/destinatario. Sus FK y checks se aplican también en PostgreSQL. Solo un gestor del
+documento puede enumerar, crear o retirar grants. Asignar un departamento distinto exige
+membership vigente o ADMIN. Desactivar el departamento retira su acceso implícito; el owner
+y los grants explícitos conservan su alcance. Los binarios se sirven como attachment, con
+nosniff, no-store y hash/tamaño verificados, pasando siempre por la API autorizada.
+
 AUDITOR por sí solo accede a metadata autorizada y eventos sanitizados; necesita permiso
 explícito para contenido, incluso COMPANY. Esta regla conservadora resuelve la ambigüedad
 entre “cualquier usuario activo” y la restricción específica del auditor en la matriz del plan.

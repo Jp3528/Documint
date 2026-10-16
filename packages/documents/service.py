@@ -5,13 +5,15 @@ import logging
 from uuid import UUID, uuid4
 
 from botocore.exceptions import BotoCoreError, ClientError
+from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from packages.identity.organization import ForbiddenError, NotFoundError
-from packages.identity.policies import Action, Actor, RoleName, permits
+from packages.identity.policies import Action, Actor, permits
 from packages.storage import ObjectStorage
 
+from .access import document_access
 from .models import Document, DocumentVersion
 from .validation import ValidatedUpload
 
@@ -35,11 +37,16 @@ class DocumentService:
         document = Document(id=uuid4(), owner_id=self.actor.id, title=upload.filename)
         self.db.add(document)
         self.db.flush()
+        return self.store_original(document, upload, 1)
+
+    def store_original(
+        self, document: Document, upload: ValidatedUpload, number: int
+    ) -> tuple[Document, DocumentVersion]:
         version_id = uuid4()
         version = DocumentVersion(
             id=version_id,
             document_id=document.id,
-            version_number=1,
+            version_number=number,
             uploaded_by=self.actor.id,
             filename=upload.filename,
             media_type=upload.media_type,
@@ -69,19 +76,40 @@ class DocumentService:
         return document, version
 
     def version(self, document_id: UUID, version_id: UUID) -> tuple[Document, DocumentVersion]:
-        document, version = (
-            self.db.get(Document, document_id),
-            self.db.get(DocumentVersion, version_id),
+        document = self.document(document_id)
+        version = self.db.scalar(
+            select(DocumentVersion).where(
+                DocumentVersion.id == version_id, DocumentVersion.document_id == document_id
+            )
         )
-        if (
-            document is None
-            or version is None
-            or version.document_id != document_id
-            or not self.actor.active
-            or (document.owner_id != self.actor.id and RoleName.ADMIN not in self.actor.roles)
-        ):
+        if version is None:
             raise NotFoundError
         return document, version
+
+    def document(self, document_id: UUID, *, manage: bool = False) -> Document:
+        query = select(Document).where(
+            Document.id == document_id, document_access(self.actor, manage=manage)
+        )
+        if manage:
+            query = query.with_for_update()
+        document = self.db.scalar(query)
+        if document is None:
+            raise NotFoundError
+        return document
+
+    def new_version(
+        self, document_id: UUID, upload: ValidatedUpload
+    ) -> tuple[Document, DocumentVersion]:
+        document = self.document(document_id, manage=True)
+        number = (
+            self.db.scalar(
+                select(func.max(DocumentVersion.version_number)).where(
+                    DocumentVersion.document_id == document_id
+                )
+            )
+            or 0
+        )
+        return self.store_original(document, upload, number + 1)
 
 
 def reconcile_upload(db: Session, storage: ObjectStorage, version: DocumentVersion) -> str:

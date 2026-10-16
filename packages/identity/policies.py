@@ -36,6 +36,8 @@ class DocumentScope:
     visibility: str
     read_users: frozenset[UUID] = frozenset()
     read_roles: frozenset[RoleName] = frozenset()
+    manage_users: frozenset[UUID] = frozenset()
+    manage_roles: frozenset[RoleName] = frozenset()
 
 
 def permits(actor: Actor, action: Action) -> bool:
@@ -65,6 +67,8 @@ def can_read_document(actor: Actor, document: DocumentScope) -> bool:
         actor.id == document.owner_id
         or actor.id in document.read_users
         or bool(actor.roles & document.read_roles)
+        or actor.id in document.manage_users
+        or bool(actor.roles & document.manage_roles)
     ):
         return True
     functional = actor.roles & {RoleName.EMPLOYEE, RoleName.KNOWLEDGE_MANAGER}
@@ -77,3 +81,17 @@ def can_read_document(actor: Actor, document: DocumentScope) -> bool:
 
 def capabilities(actor: Actor) -> dict[str, bool]:
     return {action.value: permits(actor, action) for action in Action}
+
+
+def can_manage_document(actor: Actor, document: DocumentScope) -> bool:
+    return actor.active and (
+        RoleName.ADMIN in actor.roles
+        or actor.id == document.owner_id
+        or actor.id in document.manage_users
+        or bool(actor.roles & document.manage_roles)
+        or (
+            RoleName.KNOWLEDGE_MANAGER in actor.roles
+            and document.department_id in actor.departments
+            and document.visibility in {"COMPANY", "DEPARTMENT"}
+        )
+    )

@@ -12,6 +12,7 @@ import { AuthProvider } from "./AuthProvider";
 import { DepartmentsPage, UsersPage } from "./AdminPages";
 import { HealthCard } from "./HealthCard";
 import { LoginPage } from "./LoginPage";
+import { LibraryPage } from "./LibraryPage";
 import { errorMessage, roleLabels, type Profile } from "./api";
 import { useAuth } from "./auth-context";
 
@@ -70,6 +71,9 @@ function Shell() {
         <nav className="main-nav" aria-label="Principal">
           <NavLink to="/" end>
             <span aria-hidden="true">⌂</span>Inicio
+          </NavLink>
+          <NavLink to="/library">
+            <span aria-hidden="true">▧</span>Biblioteca
           </NavLink>
           {user.capabilities.manage_users && (
             <NavLink to="/admin/users">
@@ -215,6 +219,7 @@ export function AppRoutes() {
       <Route element={<RequireSession />}>
         <Route element={<Shell />}>
           <Route index element={<HomePage />} />
+          <Route path="/library" element={<LibraryPage />} />
           <Route element={<RequireCapability capability="manage_users" />}>
             <Route path="/admin/users" element={<UsersPage />} />
           </Route>

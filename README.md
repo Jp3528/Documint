@@ -138,7 +138,21 @@ Acepta PDF, DOCX, TXT y MD validados por contenido; el límite predeterminado es
 La respuesta incluye IDs, SHA-256, tamaño, MIME detectado y estado UPLOADED. El original queda
 en el bucket privado, con una key generada por el servidor y visibilidad RESTRICTED.
 
-`GET /documents/{document_id}/versions/{version_id}` devuelve metadata al owner o ADMIN.
+`GET /documents` ofrece biblioteca paginada con ACL antes del conteo y de `offset`/`limit`.
+`GET /documents/{document_id}` devuelve detalle; PATCH cambia metadata, visibilidad y archivo.
+COMPANY requiere rol funcional, DEPARTMENT membership vigente y RESTRICTED permiso explícito,
+owner o ADMIN. AUDITOR solo no obtiene acceso implícito al contenido.
+
+`GET /documents/{document_id}/versions` lista versiones autorizadas; POST añade una nueva
+recibiendo el mismo multipart. GET de `/{version_id}` devuelve metadata y de
+`/{version_id}/original` descarga el original autorizado, sin sobrescribir versiones anteriores.
+`/documents/{document_id}/grants` lista/crea permisos READ/MANAGE para un usuario o rol;
+DELETE de `/{grant_id}` revoca. Las listas aceptan offset/limit con máximo 100.
+
+La sección **Biblioteca** de la web permite cargar, gestionar visibilidad, archivar, consultar
+versiones y descargar según los permisos actuales. El editor visual de grants se incorpora en
+la fase de administración; por ahora están disponibles por API. Consultar [ADR 0002](docs/adr/0002-access.md).
+
 UPLOADED aún no implica procesamiento ni búsqueda. Las reservas interrumpidas se recuperan con:
 
 ```sh

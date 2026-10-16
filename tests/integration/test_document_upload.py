@@ -63,7 +63,12 @@ class UploadHarness:
 @pytest.fixture
 def uploads(isolated_db: sessionmaker[Session]) -> Iterator[UploadHarness]:
     password = secrets.token_urlsafe(24)
-    users = {"owner": "KNOWLEDGE_MANAGER", "other": "KNOWLEDGE_MANAGER", "employee": "EMPLOYEE"}
+    users = {
+        "owner": "KNOWLEDGE_MANAGER",
+        "other": "KNOWLEDGE_MANAGER",
+        "employee": "EMPLOYEE",
+        "admin": "ADMIN",
+    }
     with isolated_db() as db:
         for name, role in users.items():
             user = User(
@@ -321,3 +326,106 @@ def test_failed_cleanup_keeps_a_reference_and_maintenance_never_deletes_publishe
             clean_failed_upload(db, h.storage, version)
         with pytest.raises(ValueError):
             reconcile_upload(db, h.storage, version)
+
+
+def test_read_and_manage_grants_are_distinct_and_revalidated_without_login(
+    uploads: UploadHarness,
+) -> None:
+    h = uploads
+    first = h.client.post(
+        "/documents", headers=h.headers["owner"], files={"file": ("v1.txt", b"first original")}
+    )
+    assert first.status_code == 201
+    data = first.json()
+    url = f"/documents/{data['document_id']}"
+    employee_id = h.client.get("/me", headers=h.headers["employee"]).json()["id"]
+    read_grant = {"user_id": employee_id, "permission": "READ"}
+    permission = h.client.post(url + "/grants", headers=h.headers["owner"], json=read_grant)
+    assert permission.status_code == 201
+    assert (
+        h.client.post(url + "/grants", headers=h.headers["owner"], json=read_grant).status_code
+        == 409
+    )
+    assert h.client.get(url, headers=h.headers["employee"]).json()["can_manage"] is False
+    assert (
+        h.client.patch(url, headers=h.headers["employee"], json={"title": "escalation"}).status_code
+        == 404
+    )
+    assert h.client.post(url + "/versions", headers=h.headers["employee"]).status_code == 404
+    original = url + f"/versions/{data['version_id']}/original"
+    assert h.client.get(original, headers=h.headers["employee"]).content == b"first original"
+    assert (
+        h.client.delete(
+            url + "/grants/" + permission.json()["id"], headers=h.headers["owner"]
+        ).status_code
+        == 204
+    )
+    assert h.client.get(original, headers=h.headers["employee"]).status_code == 404
+    manage = h.client.post(
+        url + "/grants",
+        headers=h.headers["owner"],
+        json={"role_name": "EMPLOYEE", "permission": "MANAGE"},
+    )
+    assert manage.status_code == 201
+    assert h.client.get(url, headers=h.headers["employee"]).json()["can_manage"] is True
+    second = h.client.post(
+        url + "/versions",
+        headers=h.headers["employee"],
+        files={"file": ("v2.txt", b"second original")},
+    )
+    assert second.status_code == 201 and second.json()["version_number"] == 2
+    assert second.json()["version_id"] != data["version_id"]
+    assert h.client.get(original, headers=h.headers["owner"]).content == b"first original"
+    history = h.client.get(url + "/versions?limit=1&offset=0", headers=h.headers["owner"])
+    assert history.status_code == 200 and history.json()["total"] == 2
+    assert history.json()["items"][0]["sha256"] == hashlib.sha256(b"second original").hexdigest()
+
+
+def test_department_visibility_scopes_and_inactive_department_behavior(
+    uploads: UploadHarness,
+) -> None:
+    h = uploads
+    admin, owner, employee, other = (
+        h.headers[key] for key in ["admin", "owner", "employee", "other"]
+    )
+    departments = []
+    for code in ["ENGINEERING", "FINANCE"]:
+        response = h.client.post("/departments", headers=admin, json={"code": code, "name": code})
+        assert response.status_code == 201
+        departments.append(response.json()["id"])
+    for headers in [owner, employee]:
+        user = h.client.get("/me", headers=headers).json()["id"]
+        assert (
+            h.client.post(
+                f"/departments/{departments[0]}/memberships", headers=admin, json={"user_id": user}
+            ).status_code
+            == 201
+        )
+    created = h.client.post("/documents", headers=owner, files={"file": ("scoped.txt", b"scoped")})
+    assert created.status_code == 201
+    url = "/documents/" + created.json()["document_id"]
+    assert h.client.patch(url, headers=owner, json={"visibility": "DEPARTMENT"}).status_code == 409
+    assert (
+        h.client.patch(
+            url, headers=owner, json={"visibility": "DEPARTMENT", "department_id": departments[1]}
+        ).status_code
+        == 404
+    )
+    scoped = h.client.patch(
+        url, headers=owner, json={"visibility": "DEPARTMENT", "department_id": departments[0]}
+    )
+    assert scoped.status_code == 200
+    assert h.client.get(url, headers=employee).status_code == 200
+    assert h.client.get(url, headers=other).status_code == 404
+    assert h.client.patch(url, headers=admin, json={"visibility": "COMPANY"}).status_code == 200
+    assert h.client.get(url, headers=other).json()["can_manage"] is False
+    assert h.client.patch(url, headers=owner, json={"visibility": "DEPARTMENT"}).status_code == 200
+    assert (
+        h.client.patch(
+            f"/departments/{departments[0]}", headers=admin, json={"active": False}
+        ).status_code
+        == 200
+    )
+    assert h.client.get(url, headers=employee).status_code == 404
+    assert h.client.get(url, headers=owner).status_code == 200
+    assert h.client.patch(url, headers=owner, json={"archived": True}).status_code == 200

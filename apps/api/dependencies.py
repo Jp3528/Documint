@@ -6,7 +6,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session, sessionmaker
 
 from packages.config import Settings
-from packages.documents.service import DocumentService
+from packages.documents.library import LibraryService
 from packages.identity.models import User
 from packages.identity.organization import OrganizationService, load_actor
 from packages.identity.security import AuthConfigurationError, AuthenticationError
@@ -64,5 +64,5 @@ def get_document_service(
     user: Annotated[User, Depends(current_user)],
     db: Annotated[Session, Depends(get_session)],
     storage: Annotated[ObjectStorage, Depends(get_object_storage)],
-) -> DocumentService:
-    return DocumentService(db, load_actor(db, user), storage)
+) -> LibraryService:
+    return LibraryService(db, load_actor(db, user), storage)

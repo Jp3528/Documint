@@ -101,6 +101,8 @@ async function failure(response: Response): Promise<ApiError> {
     403: "No tienes permiso para esta operación.",
     404: "El recurso no está disponible.",
     409: "El cambio entra en conflicto con el estado actual.",
+    413: "El archivo supera el tamaño permitido.",
+    415: "El archivo no tiene un formato válido. Utiliza PDF, DOCX, TXT o MD.",
     422: "Revisa los datos del formulario.",
   };
   let message = messages[response.status] ?? "El servicio no pudo completar la solicitud.";
@@ -149,7 +151,7 @@ export async function refreshAccess(): Promise<void> {
   return refreshFlight;
 }
 
-export async function apiRequest(path: string, options: RequestInit = {}): Promise<unknown> {
+export async function apiResponse(path: string, options: RequestInit = {}): Promise<Response> {
   const epoch = generation,
     attemptedToken = accessToken;
   const send = () => {
@@ -170,8 +172,12 @@ export async function apiRequest(path: string, options: RequestInit = {}): Promi
     if (response.status === 403) permissionListeners.forEach((listener) => listener());
     throw await failure(response);
   }
-  if (response.status === 204) return null;
-  return response.json();
+  return response;
+}
+
+export async function apiRequest(path: string, options: RequestInit = {}): Promise<unknown> {
+  const response = await apiResponse(path, options);
+  return response.status === 204 ? null : response.json();
 }
 
 export async function getProfile(): Promise<Profile> {
