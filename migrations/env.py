@@ -4,6 +4,7 @@ from packages.config import get_settings
 from packages.database import make_engine
 from packages.documents.models import Document
 from packages.identity.models import User  # noqa: F401
+from packages.parsers.models import Extraction  # noqa: F401
 from packages.processing.models import ProcessingJob  # noqa: F401
 
 settings = get_settings()

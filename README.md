@@ -195,6 +195,22 @@ autorizados. GET/POST de `/documents/{document_id}/versions/{version_id}/jobs` c
 el job; POST de `/documents/{document_id}/jobs/{job_id}/retry` reintenta el mismo UUID.
 Ver [ADR 0008](docs/adr/0008-processing-outbox.md).
 
+## Extracción documental
+
+El registro de parsers convierte PDF, DOCX, TXT y Markdown en bloques con procedencia: página
+PDF, párrafo/heading/tabla de Word o líneas de texto. Snapshots con revisión de parser, hashes
+y contadores permiten reuso sin duplicados. No incluye OCR ni inventa páginas para Word.
+
+Para ejecutar solo esta etapa sobre un job autorizado desde la terminal de confianza:
+
+```sh
+uv run python -m scripts.extract_job <job_id>
+```
+
+El job queda EXTRACTED/WAITING_PIPELINE y la versión CHUNKING. Fallos de parsing o integridad
+quedan FAILED con código seguro; no se publica salida parcial ni se marca READY. El pipeline
+completo se conecta en 3C. Límites configurables y alcance en [ADR 0009](docs/adr/0009-parsers.md).
+
 ## Comprobaciones
 
 ```sh

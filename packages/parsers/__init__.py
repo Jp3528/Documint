@@ -1,1 +1,1 @@
-"""Document parser adapters are introduced in session 3A."""
+"""Bounded document parsers and normalized extraction snapshots with provenance."""

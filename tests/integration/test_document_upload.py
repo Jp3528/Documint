@@ -1,4 +1,5 @@
 import hashlib
+import io
 import os
 import secrets
 from collections.abc import Iterator
@@ -10,6 +11,7 @@ import pytest
 from botocore.exceptions import EndpointConnectionError
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
+from pypdf import PdfWriter
 from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
@@ -21,6 +23,9 @@ from packages.documents.models import Document, DocumentVersion
 from packages.documents.service import clean_failed_upload, reconcile_upload
 from packages.identity.models import User, UserRole
 from packages.identity.security import hash_password
+from packages.parsers.contracts import ParserError
+from packages.parsers.models import Extraction
+from packages.parsers.service import ExtractionService
 from packages.processing.models import ProcessingJob
 from packages.storage import S3Storage
 
@@ -480,3 +485,91 @@ def test_malformed_or_truncated_multipart_leaves_no_original_or_job(
     with uploads.factory() as db:
         assert db.scalar(select(func.count()).select_from(Document)) == 0
         assert db.scalar(select(func.count()).select_from(ProcessingJob)) == 0
+
+
+def test_all_corpus_extractions_persist_once_with_verified_counters_and_locators(
+    uploads: UploadHarness,
+) -> None:
+    h = uploads
+    for path in sorted(FILES.iterdir()):
+        response = h.client.post(
+            "/documents", headers=h.headers["owner"], files={"file": (path.name, path.read_bytes())}
+        )
+        assert response.status_code == 201
+        version_id = UUID(response.json()["version_id"])
+        with h.factory() as db:
+            service = ExtractionService(db, h.storage, Settings())
+            extraction = service.extract_version(version_id)
+            assert service.extract_version(version_id).id == extraction.id
+            assert extraction.character_count == sum(
+                len(block["text"]) for block in extraction.blocks
+            )
+            assert extraction.block_count == len(extraction.blocks)
+            assert all(block["locator"]["format"] == path.suffix[1:] for block in extraction.blocks)
+            job = db.scalar(select(ProcessingJob).where(ProcessingJob.version_id == version_id))
+            assert job
+            assert service.run_stage(job.id) == "WAITING_PIPELINE"
+            assert job.stage == "EXTRACTED" and job.attempts == 1
+            assert service.run_stage(job.id) == "WAITING_PIPELINE" and job.attempts == 1
+            assert (
+                db.scalar(
+                    select(func.count())
+                    .select_from(Extraction)
+                    .where(Extraction.version_id == version_id)
+                )
+                == 1
+            )
+            stored_version = db.get(DocumentVersion, version_id)
+            assert stored_version and stored_version.status == "CHUNKING"
+
+
+@pytest.mark.parametrize("failure", ["empty_pdf", "storage_integrity", "output_limit"])
+def test_extraction_errors_persist_failed_without_partial_blocks(
+    uploads: UploadHarness, failure: str
+) -> None:
+    h = uploads
+    filename, content = "valid.txt", b"valid text for extraction"
+    if failure == "empty_pdf":
+        writer = PdfWriter()
+        writer.add_blank_page(width=100, height=100)
+        stream = io.BytesIO()
+        writer.write(stream)
+        filename, content = "scan.pdf", stream.getvalue()
+    response = h.client.post(
+        "/documents", headers=h.headers["owner"], files={"file": (filename, content)}
+    )
+    assert response.status_code == 201
+    version_id = UUID(response.json()["version_id"])
+    with h.factory() as db:
+        version = db.get(DocumentVersion, version_id)
+        job = db.scalar(select(ProcessingJob).where(ProcessingJob.version_id == version_id))
+        assert version and job
+        if failure == "storage_integrity":
+            h.storage.put(version.object_key, b"changed", "text/plain")
+        settings = Settings(parser_max_characters=4) if failure == "output_limit" else Settings()
+        assert ExtractionService(db, h.storage, settings).run_stage(job.id) == "FAILED"
+        expected = {
+            "empty_pdf": "NO_EXTRACTABLE_TEXT",
+            "storage_integrity": "STORAGE_INTEGRITY_FAILED",
+            "output_limit": "EXTRACTION_LIMIT",
+        }[failure]
+        assert job.error_code == expected and version.status == "FAILED" and job.attempts == 1
+        assert db.scalar(select(func.count()).select_from(Extraction)) == 0
+
+
+def test_cached_extraction_is_checked_for_content_integrity(uploads: UploadHarness) -> None:
+    h = uploads
+    response = h.client.post(
+        "/documents", headers=h.headers["owner"], files={"file": ("text.txt", b"original content")}
+    )
+    assert response.status_code == 201
+    with h.factory() as db:
+        service = ExtractionService(db, h.storage, Settings())
+        version_id = UUID(response.json()["version_id"])
+        extraction = service.extract_version(version_id)
+        extraction.blocks = [
+            {**extraction.blocks[0], "text": "X" * len(extraction.blocks[0]["text"])}
+        ]
+        db.commit()
+        with pytest.raises(ParserError, match="EXTRACTION_INTEGRITY_FAILED"):
+            service.extract_version(version_id)

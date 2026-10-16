@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     upload_max_bytes: int = Field(default=20 * 1024 * 1024, ge=1, le=100 * 1024 * 1024)
     docx_max_expanded_bytes: int = Field(default=50 * 1024 * 1024, ge=1, le=200 * 1024 * 1024)
     processing_pipeline_key: str = Field(default="text-v1", min_length=1, max_length=128)
+    parser_max_characters: int = Field(default=2_000_000, ge=1, le=20_000_000)
+    parser_max_blocks: int = Field(default=10_000, ge=1, le=100_000)
+    parser_max_pdf_pages: int = Field(default=1000, ge=1, le=10_000)
 
 
 @lru_cache

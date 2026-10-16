@@ -55,3 +55,20 @@ it("does not offer retry controls to a read-only user", async () => {
   expect(await screen.findByText("No se pudo iniciar")).toBeInTheDocument();
   expect(screen.queryByRole("button")).not.toBeInTheDocument();
 });
+
+it("explains a document without text and hides retry after the execution limit", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () =>
+      response({
+        items: [{ ...job, status: "FAILED", attempts: 3, error_code: "NO_EXTRACTABLE_TEXT" }],
+        total: 1,
+        offset: 0,
+        limit: 1,
+      }),
+    ),
+  );
+  render(<ProcessingPanel documentId={documentId} versionId={versionId} canManage />);
+  expect(await screen.findByRole("alert")).toHaveTextContent("no contiene texto extraíble");
+  expect(screen.queryByRole("button")).not.toBeInTheDocument();
+});

@@ -85,11 +85,29 @@ export function ProcessingPanel({
               Intentos de procesamiento: {job.attempts} de {job.max_attempts}.
             </p>
           )}
-          {canManage && (!job || ["FAILED", "DISPATCH_FAILED"].includes(job.status)) && (
-            <button className="button secondary" disabled={busy} onClick={() => void request()}>
-              {busy ? "Solicitando…" : job ? "Reintentar procesamiento" : "Solicitar procesamiento"}
-            </button>
+          {job?.error_code && (
+            <p role="alert" className="error-box">
+              {job.error_code === "NO_EXTRACTABLE_TEXT"
+                ? "Este archivo no contiene texto extraíble. Sube una versión con texto."
+                : job.error_code === "EXTRACTION_LIMIT"
+                  ? "El contenido supera los límites de procesamiento. Prueba un archivo más pequeño."
+                  : job.error_code.includes("INTEGRITY")
+                    ? "No se pudo verificar el contenido guardado. Contacta al administrador."
+                    : "No se pudo completar el procesamiento. Tu original permanece guardado."}
+            </p>
           )}
+          {canManage &&
+            (!job ||
+              (["FAILED", "DISPATCH_FAILED"].includes(job.status) &&
+                job.attempts < job.max_attempts)) && (
+              <button className="button secondary" disabled={busy} onClick={() => void request()}>
+                {busy
+                  ? "Solicitando…"
+                  : job
+                    ? "Reintentar procesamiento"
+                    : "Solicitar procesamiento"}
+              </button>
+            )}
         </>
       )}
     </section>
