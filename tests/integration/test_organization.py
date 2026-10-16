@@ -1,9 +1,11 @@
+import logging
 import os
 import secrets
 from collections.abc import Iterator
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
+import jwt
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
@@ -15,7 +17,7 @@ from packages.config import Settings
 from packages.identity.models import Department, DepartmentMember, User, UserRole
 from packages.identity.organization import load_actor
 from packages.identity.policies import DocumentScope, RoleName, can_read_document
-from packages.identity.security import hash_password
+from packages.identity.security import TokenCodec, hash_password
 
 pytestmark = [
     pytest.mark.infrastructure,
@@ -29,6 +31,7 @@ pytestmark = [
 class OrganizationHarness:
     client: TestClient
     factory: sessionmaker[Session]
+    settings: Settings
     passwords: dict[RoleName, str]
     user_ids: dict[RoleName, UUID]
     department_ids: tuple[UUID, UUID]
@@ -75,10 +78,11 @@ def organization(isolated_db: sessionmaker[Session]) -> Iterator[OrganizationHar
         with isolated_db() as db:
             yield db
 
-    app = create_app(Settings(auth_secret=SecretStr(secrets.token_urlsafe(48))))
+    settings = Settings(auth_secret=SecretStr(secrets.token_urlsafe(48)))
+    app = create_app(settings)
     app.dependency_overrides[get_session] = override_session
     with TestClient(app) as client:
-        yield OrganizationHarness(client, isolated_db, passwords, ids, departments)
+        yield OrganizationHarness(client, isolated_db, settings, passwords, ids, departments)
 
 
 @pytest.mark.parametrize("role", [RoleName.EMPLOYEE, RoleName.KNOWLEDGE_MANAGER, RoleName.AUDITOR])
@@ -110,6 +114,77 @@ def test_non_admin_cannot_list_users_assign_roles_or_mutate_departments(
         ).status_code
         == 403
     )
+    for method, path, payload in (
+        ("GET", f"/admin/users/{h.user_ids[RoleName.ADMIN]}", None),
+        (
+            "POST",
+            "/admin/users",
+            {
+                "email": "escalation@documind.example",
+                "display_name": "Escalation attempt",
+                "password": secrets.token_urlsafe(24),
+                "roles": ["ADMIN"],
+            },
+        ),
+        ("PATCH", f"/admin/users/{h.user_ids[RoleName.ADMIN]}", {"status": "INACTIVE"}),
+        ("PATCH", f"/departments/{h.department_ids[0]}", {"active": False}),
+        ("GET", f"/departments/{h.department_ids[0]}/memberships", None),
+        (
+            "DELETE",
+            f"/departments/{h.department_ids[0]}/memberships/{h.user_ids[role]}",
+            None,
+        ),
+    ):
+        assert h.client.request(method, path, headers=headers, json=payload).status_code == 403
+
+
+def test_every_identity_endpoint_rejects_anonymous_requests(
+    organization: OrganizationHarness,
+) -> None:
+    h = organization
+    user, department = h.user_ids[RoleName.ADMIN], h.department_ids[0]
+    for method, path in (
+        ("GET", "/me"),
+        ("GET", "/admin/users"),
+        ("POST", "/admin/users"),
+        ("GET", f"/admin/users/{user}"),
+        ("PATCH", f"/admin/users/{user}"),
+        ("PUT", f"/admin/users/{user}/roles"),
+        ("GET", "/admin/roles"),
+        ("GET", "/departments"),
+        ("POST", "/departments"),
+        ("GET", f"/departments/{department}"),
+        ("PATCH", f"/departments/{department}"),
+        ("GET", f"/departments/{department}/memberships"),
+        ("POST", f"/departments/{department}/memberships"),
+        ("DELETE", f"/departments/{department}/memberships/{user}"),
+    ):
+        assert h.client.request(method, path).status_code == 401
+
+
+def test_signed_privilege_claims_and_other_identity_cannot_override_database(
+    organization: OrganizationHarness,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    caplog.set_level(logging.INFO)
+    h = organization
+    headers = h.login(RoleName.EMPLOYEE)
+    codec = TokenCodec(h.settings)
+    payload = codec.decode(headers["Authorization"].removeprefix("Bearer ")).model_dump(mode="json")
+    assert h.settings.auth_secret is not None
+    key = h.settings.auth_secret.get_secret_value()
+    payload.update(roles=["ADMIN"], departments=[str(h.department_ids[1])])
+    forged = jwt.encode(payload, key, algorithm="HS256")
+    forged_headers = {"Authorization": "Bearer " + forged}
+    assert h.client.get("/admin/users", headers=forged_headers).status_code == 403
+    own = h.client.get(f"/me?user_id={h.user_ids[RoleName.ADMIN]}", headers=forged_headers)
+    assert own.status_code == 200 and own.json()["id"] == str(h.user_ids[RoleName.EMPLOYEE])
+    assert own.json()["roles"] == ["EMPLOYEE"]
+    assert [item["id"] for item in own.json()["departments"]] == [str(h.department_ids[0])]
+    payload["sub"] = str(h.user_ids[RoleName.ADMIN])
+    mismatched = jwt.encode(payload, key, algorithm="HS256")
+    assert h.client.get("/me", headers={"Authorization": "Bearer " + mismatched}).status_code == 401
+    assert all(value not in caplog.text for value in [forged, mismatched, *h.passwords.values()])
 
 
 def test_employee_sees_only_membership_and_foreign_ids_match_missing(

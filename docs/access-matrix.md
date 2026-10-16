@@ -9,6 +9,7 @@ Las capabilities de `/me` sirven para navegación; ocultar un botón no autoriza
 | Listar/crear/editar usuarios             | Sí    | 403                               | 403                      | 403                      |
 | Leer/asignar roles                       | Sí    | 403                               | 403                      | 403                      |
 | Crear/editar departamentos y memberships | Sí    | 403                               | 403                      | 403                      |
+| Listar memberships                       | Sí    | 403                               | 403                      | 403                      |
 | Listar departamentos                     | Todos | Solo memberships activos          | Solo memberships activos | Solo memberships activos |
 | Leer departamento ajeno por ID           | Sí    | 404                               | 404                      | 404                      |
 | Capability de gestión de conocimiento    | Sí    | Sí, dentro del alcance documental | No                       | No                       |
@@ -30,3 +31,17 @@ no afirma haber protegido un retrieval o historial que todavía no existe.
 Cuando exista historial, ser propietario de la conversación no bastará: cada fuente se volverá
 a autorizar. Perder READ sobre una de ellas ocultará toda la respuesta y sus citas y la excluirá
 del contexto posterior. La evidencia se preservará para auditoría autorizada conforme a ADR 0002.
+
+## Revisión 1R
+
+Se ejecutaron negativos sobre las once operaciones administrativas con los tres roles sin
+ADMIN: 33 solicitudes rechazadas con 403. Las catorce operaciones de identidad/organización
+rechazan solicitudes anónimas con 401, incluidas mutaciones sin cuerpo. Claims adicionales de
+roles/departamentos en un JWT firmado no sustituyen la base de datos; combinar el subject de
+ADMIN con la sesión del colaborador devuelve 401. `/me?user_id=...` sigue mostrando el perfil
+propio. La captura de logs INFO no contiene los tokens ni contraseñas usados en esa prueba.
+
+Las diez identidades sintéticas se provisionan en un esquema PostgreSQL transaccional aislado.
+Sus actores cargados de la base coinciden con las 80 decisiones de la matriz persona/documento
+y con las fuentes permitidas/prohibidas de los 24 casos golden. Esto verifica el contrato de
+políticas, no un filtro de retrieval productivo. Evidencia completa en `docs/sessions/1R.md`.
