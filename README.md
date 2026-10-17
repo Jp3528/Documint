@@ -1,293 +1,203 @@
-# Documint
+# Documint | Document Knowledge Platform
 
-Plataforma de conocimiento empresarial con ingestión documental, permisos y RAG con evidencia.
-El nombre del producto y del repositorio es **Documint**.
+[Español](#espanol) · [English](#english)
 
-El desarrollo sigue el plan 1.1 en nueve fases y 36 sesiones. La base incluye API,
-worker, interfaz autenticada y administrativa, servicios locales, corpus y proveedores fake. El seguimiento está en
-[docs/progress.md](docs/progress.md).
+<a id="espanol"></a>
 
-Las [decisiones de arquitectura](docs/adr/0001-architecture.md), el
-[modelo de amenazas](docs/threat-model.md) y el [dataset sintético](evals/README.md) fijan los
-contratos de permisos y evidencia antes de habilitar búsqueda o generación.
+## Español
 
-## Requisitos
+### Descripción
 
-- Python **3.12** y [uv](https://docs.astral.sh/uv/).
-- Node.js **22.12 o superior**; CI utiliza Node 22.
-- npm **11.6.2** para resolver las dependencias de workspaces de forma reproducible.
-- Docker Engine con Compose v2 o posterior (Docker Desktop en Windows, contenedores Linux).
+Plataforma de conocimiento documental en desarrollo, orientada a gestionar fuentes con permisos y construir respuestas respaldadas por evidencia. La implementación actual cubre identidad, biblioteca versionada, almacenamiento privado, trabajos de procesamiento y etapas de extracción y fragmentación.
 
-## Instalación
+### Funcionalidades
 
-Desde la raíz del repositorio:
+- Autenticación con access tokens, rotación de refresh y administración de usuarios y departamentos.
+- Biblioteca con permisos, versiones inmutables y originales en almacenamiento S3 privado.
+- Carga validada de PDF, DOCX, TXT y Markdown.
+- Cola de procesamiento con Redis/Celery, parsers con procedencia y fragmentación.
+- Corpus sintético, proveedores fake deterministas y evidencia de avance por sesión.
 
-```sh
+### Tecnologías
+
+Python 3.12 · FastAPI · PostgreSQL/pgvector · Redis · Celery · MinIO/S3 · React · TypeScript · Vite · Docker
+
+### Ejecutar localmente
+
+**Requisitos:** Python 3.12, uv, Node.js 22.12 o superior, npm 11.6.2 y Docker con Compose v2 y contenedores Linux.
+
+```bash
+git clone https://github.com/Jp3528/Documint.git
+cd Documint
+```
+
+```bash
 uv sync --locked --dev
 npx --yes npm@11.6.2 ci
 uv run python -m scripts.init_env
 ```
 
-Las dependencias se fijan en `uv.lock` y `package-lock.json`. No se necesitan claves de IA.
-El último comando crea `.env` con una clave de firma aleatoria y privada; una clave existente
-se conserva. Nunca publiques ese archivo.
+**Configuración.** `scripts.init_env` crea `.env` con una clave privada aleatoria y conserva una existente. Consulta [`.env.example`](.env.example) para personalizar puertos y servicios. El entorno base no necesita claves de IA.
 
-## Servicios locales
-
-Copia `.env.example` a `.env` si necesitas personalizar la configuración. API, worker y Alembic
-cargan ese archivo desde la raíz; las variables del proceso tienen prioridad. Los valores de
-ejemplo solo sirven para desarrollo. Los puertos se publican exclusivamente en `127.0.0.1`.
-
-```sh
+```bash
 docker compose up -d --build --wait --wait-timeout 120
 uv run alembic upgrade head
 uv run python -m scripts.init_storage
 ```
 
-La primera compilación de MinIO puede tardar varios minutos y necesita Internet. Se compila
-desde un commit oficial fijado porque la distribución comunitaria pasó a ser código fuente.
-Ver [infra/README.md](infra/README.md) para versiones, mantenimiento y limitaciones.
+Inicia la API y la web en terminales separadas:
 
-| Servicio                 | Acceso desde el host     |
-| ------------------------ | ------------------------ |
-| PostgreSQL 17 / pgvector | `127.0.0.1:55432`        |
-| Redis / Celery           | `127.0.0.1:56379`        |
-| MinIO S3                 | `http://127.0.0.1:59000` |
-| Consola MinIO            | `http://127.0.0.1:59001` |
-
-`docker compose down` detiene los servicios conservando volúmenes. Evita `down -v` salvo que
-quieras borrar todos los datos de este entorno. Otros proyectos usan redes y volúmenes separados.
-
-## Desarrollo
-
-En una terminal, inicia la API:
-
-```sh
+```bash
 uv run uvicorn apps.api.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-En otra terminal, inicia la web:
-
-```sh
+```bash
 npm run dev
 ```
 
-Abre `http://localhost:5173` e inicia sesión con una cuenta local o demo. En **Inicio** puedes
-comprobar la conexión con la API. Vite reenvía `/api/*` a la API quitando ese prefijo y reescribe
-el path de la cookie a `/api/auth`; las rutas de React pueden recargarse directamente.
-No requiere configurar CORS para este flujo local. El contrato HTTP está en
-`http://127.0.0.1:8000/docs`.
+Web: `http://localhost:5173`. Contrato OpenAPI: `http://127.0.0.1:8000/docs`. Para crear una cuenta local, consulta `uv run python -m scripts.create_user --help`.
 
-`GET /health` comprueba que el proceso de la API responde. `GET /ready` comprueba base de datos
-con migración y extensión vector, Redis y acceso al bucket privado. Devuelve 200 con todos
-disponibles o 503 con el estado de cada dependencia, sin detalles de conexión ni credenciales.
+Para procesar trabajos, ejecuta en otras terminales:
 
-## Identidad y sesiones
-
-Después de migrar, crea las cuentas sintéticas solo si necesitas una demo local:
-
-```sh
-uv run python -m scripts.seed_demo --demo
-```
-
-Contraseña pública de todas las cuentas demo: **`DocumindDemo2026!`**. Los emails se encuentran
-en `evals/personas.json`; por ejemplo `admin@documind.example` e `ingenieria@documind.example`.
-El seed conserva contraseñas/estados existentes y sincroniza roles y memberships del manifiesto.
-Rechaza `DOCUMIND_ENVIRONMENT=production`. `inactivo@documind.example` está desactivado.
-
-Para una cuenta local propia, usa entrada oculta de contraseña:
-
-```sh
-uv run python -m scripts.create_user --email usuario@documind.example --name "Usuario local"
-```
-
-| Endpoint             | Uso                                                                      |
-| -------------------- | ------------------------------------------------------------------------ |
-| `POST /auth/login`   | JSON `email` y `password`; devuelve access JWT y cookie refresh HttpOnly |
-| `POST /auth/refresh` | Rota el refresh de la cookie; un replay revoca su familia                |
-| `POST /auth/logout`  | Revoca la familia y elimina la cookie                                    |
-| `GET /me`            | Perfil con `Authorization: Bearer <access>`                              |
-
-Los POST requieren `X-DocuMind-CSRF: 1`. Si se envía Origin debe estar entre `DOCUMIND_WEB_ORIGINS`
-(lista JSON; por defecto ambos orígenes locales de Vite). El access dura cinco minutos; el
-refresh expira a siete días desde el login. Logout y desactivación bloquean el access vigente.
-Sin clave configurada, auth responde 503. Consulta [ADR 0006](docs/adr/0006-authentication.md).
-La web recupera la sesión desde la cookie al recargar y conserva el access token solo en memoria.
-Un único refresh atiende solicitudes concurrentes dentro de una pestaña. En navegadores con
-Web Locks, las operaciones de cookie también se coordinan entre pestañas. Logout solo vuelve
-al login cuando el servidor confirma la revocación; un fallo de conexión se muestra al usuario.
-
-La navegación muestra administración según las capabilities vigentes. ADMIN puede listar y
-crear usuarios, editar roles y estados, y listar/crear/activar departamentos. El servidor vuelve
-a comprobar permisos en cada operación. Los formularios tienen etiquetas, estados de error y
-foco visible; la interfaz se comprobó en escritorio y móvil. Evidencia en
-[sesión 1C](docs/sessions/1C.md).
-
-`/me` incluye roles, departamentos activos y capabilities. ADMIN gestiona usuarios y roles en
-`/admin/users`, `/admin/roles` y `/admin/users/{id}/roles`; departamentos y memberships en
-`/departments` y `/departments/{id}/memberships`. Listas aceptan `offset` y `limit` (máximo 100).
-Consulta los contratos completos en `/docs` y la [matriz de acceso](docs/access-matrix.md).
-Para provisionar un administrador propio desde la terminal de confianza, añade `--role ADMIN`
-al comando `scripts.create_user`. Nunca se expone ese privilegio como registro público.
-
-## Carga de documentos
-
-`POST /documents` recibe multipart con un único campo archivo `file` y bearer ADMIN/KM.
-Acepta PDF, DOCX, TXT y MD validados por contenido; el límite predeterminado es 20 MiB.
-`DOCUMIND_UPLOAD_MAX_BYTES` y `DOCUMIND_DOCX_MAX_EXPANDED_BYTES` ajustan los presupuestos.
-La respuesta incluye IDs, SHA-256, tamaño, MIME detectado y estado UPLOADED. El original queda
-en el bucket privado, con una key generada por el servidor y visibilidad RESTRICTED.
-
-`GET /documents` ofrece biblioteca paginada con ACL antes del conteo y de `offset`/`limit`.
-`GET /documents/{document_id}` devuelve detalle; PATCH cambia metadata, visibilidad y archivo.
-COMPANY requiere rol funcional, DEPARTMENT membership vigente y RESTRICTED permiso explícito,
-owner o ADMIN. AUDITOR solo no obtiene acceso implícito al contenido.
-
-`GET /documents/{document_id}/versions` lista versiones autorizadas; POST añade una nueva
-recibiendo el mismo multipart. GET de `/{version_id}` devuelve metadata y de
-`/{version_id}/original` descarga el original autorizado, sin sobrescribir versiones anteriores.
-`/documents/{document_id}/grants` lista/crea permisos READ/MANAGE para un usuario o rol;
-DELETE de `/{grant_id}` revoca. Las listas aceptan offset/limit con máximo 100.
-
-La sección **Biblioteca** de la web permite cargar, gestionar visibilidad, archivar, consultar
-versiones y descargar según los permisos actuales. El editor visual de grants se incorpora en
-la fase de administración; por ahora están disponibles por API. Consultar [ADR 0002](docs/adr/0002-access.md).
-
-UPLOADED aún no implica procesamiento ni búsqueda. Las reservas interrumpidas se recuperan con:
-
-```sh
-uv run python -m scripts.reconcile_uploads
-```
-
-El comando solo procesa reservas de al menos cinco minutos y conserva metadata ante fallos;
-no elimina versiones publicadas. Ver [ADR 0007](docs/adr/0007-upload-originals.md) y
-[evidencia 2A](docs/sessions/2A.md).
-
-## Worker
-
-Con Redis disponible, inicia un worker en otra terminal:
-
-```sh
+```bash
 uv run celery -A apps.worker.celery_app:celery_app worker --pool=solo --queues=celery,documind.processing --loglevel=INFO
 ```
 
-Despacha y verifica una tarea por el broker:
-
-```sh
-uv run python -m scripts.worker_smoke
-```
-
-El pool `solo` permite el smoke local en Windows. El despliegue del worker será Linux/Docker.
-Las variables de broker están documentadas en `.env.example`; Celery utiliza la configuración
-compartida y carga `.env` desde la raíz.
-
-En otra terminal, publica los jobs de procesamiento persistidos:
-
-```sh
+```bash
 uv run python -m scripts.dispatch_jobs --watch
 ```
 
-Sin `--watch` publica una sola tanda. Cada original almacenado tiene un job único por
-versión/pipeline, incluso si Redis no estaba disponible durante la carga. El dispatcher limita
-reintentos de broker; el worker actual deja WAITING_PIPELINE, con cero intentos de procesamiento,
-hasta conectar la fase 3. No marca READY. La web permite consultar estado y reintentar fallos
-autorizados. GET/POST de `/documents/{document_id}/versions/{version_id}/jobs` consulta/solicita
-el job; POST de `/documents/{document_id}/jobs/{job_id}/retry` reintenta el mismo UUID.
-Ver [ADR 0008](docs/adr/0008-processing-outbox.md).
+### Comprobaciones
 
-## Extracción documental
-
-El registro de parsers convierte PDF, DOCX, TXT y Markdown en bloques con procedencia: página
-PDF, párrafo/heading/tabla de Word o líneas de texto. Snapshots con revisión de parser, hashes
-y contadores permiten reuso sin duplicados. No incluye OCR ni inventa páginas para Word.
-
-Para ejecutar solo esta etapa sobre un job autorizado desde la terminal de confianza:
-
-```sh
-uv run python -m scripts.extract_job <job_id>
-```
-
-El job queda EXTRACTED/WAITING_PIPELINE y la versión CHUNKING. Fallos de parsing o integridad
-quedan FAILED con código seguro; no se publica salida parcial ni se marca READY. El pipeline
-completo se conecta en 3C. Límites configurables y alcance en [ADR 0009](docs/adr/0009-parsers.md).
-
-## Comprobaciones
-
-```sh
+```bash
 uv run python -m scripts.check
-```
-
-Ese comando ejecuta lint y formato Python, mypy, pytest, lint/tipos/pruebas web, build y formato
-del repositorio. También se pueden ejecutar individualmente:
-
-```sh
-uv run ruff check .
-uv run ruff format --check .
-uv run mypy
-uv run pytest
-npm run lint
-npm run typecheck
-npm test
-npm run build
 npm run format:check
 ```
 
-La prueba de worker inicia un worker real en el proceso con transporte de memoria. Comprueba
-registro, serialización y ejecución; no equivale a verificar Redis. Todos los checks automáticos
-son independientes de un proveedor de IA.
+El check reúne lint, formato, tipos, pruebas y build. Las pruebas con infraestructura real requieren servicios activos y `DOCUMIND_TEST_INFRA=1`; los proveedores fake no acreditan calidad semántica ni integración con un proveedor real. Revisa `docs/progress.md` y las evidencias antes de interpretar resultados históricos.
 
-Con los servicios inicializados, ejecuta además la integración real:
+### Estructura
 
-```sh
-# Bash
-DOCUMIND_TEST_INFRA=1 uv run pytest -m infrastructure
-# PowerShell (en dos comandos)
-$env:DOCUMIND_TEST_INFRA='1'
-uv run pytest -m infrastructure
+| Ruta                           | Contenido                                                     |
+| ------------------------------ | ------------------------------------------------------------- |
+| [`apps/api/`](apps/api/)       | API y controles de acceso.                                    |
+| [`apps/worker/`](apps/worker/) | Trabajos asíncronos.                                          |
+| [`apps/web/`](apps/web/)       | Interfaz React y TypeScript.                                  |
+| [`packages/`](packages/)       | Parsers, contratos de proveedores y componentes del pipeline. |
+| [`migrations/`](migrations/)   | Migraciones Alembic.                                          |
+| [`tests/`](tests/)             | Pruebas unitarias y de integración.                           |
+| [`docs/`](docs/)               | Decisiones, avance y evidencia.                               |
+
+### Alcance
+
+El [seguimiento actual](docs/progress.md) sitúa el proyecto en la fase 3: extracción terminada y fragmentación con validación local; la conexión completa del pipeline continúa pendiente. Recuperación, citas y chat RAG corresponden a fases posteriores. Un documento cargado o fragmentado todavía no se considera listo para búsqueda. No incluye OCR ni conectores externos. Los nombres internos `DOCUMIND_*` se conservan por compatibilidad; el producto se llama Documint.
+
+### Documentación
+
+- [Estado y evidencia por sesión](docs/progress.md)
+- [Arquitectura](docs/adr/0001-architecture.md)
+- [Matriz de acceso](docs/access-matrix.md)
+- [Modelo de amenazas](docs/threat-model.md)
+- [Servicios locales y mantenimiento](infra/README.md)
+- [Corpus y evaluación](evals/README.md)
+
+---
+
+<a id="english"></a>
+
+## English
+
+### Overview
+
+A document knowledge platform under development, designed to manage permission-controlled sources and build evidence-backed answers. The current implementation covers identity, a versioned library, private storage, processing jobs, extraction and chunking stages.
+
+### Features
+
+- Authentication with access tokens, refresh rotation, and user and department administration.
+- A permission-controlled library with immutable versions and originals in private S3 storage.
+- Validated PDF, DOCX, TXT and Markdown uploads.
+- Redis/Celery processing queue, provenance-aware parsers and chunking.
+- Synthetic corpus, deterministic fake providers and session-by-session progress evidence.
+
+### Technology
+
+Python 3.12 · FastAPI · PostgreSQL/pgvector · Redis · Celery · MinIO/S3 · React · TypeScript · Vite · Docker
+
+### Run locally
+
+**Requirements:** Python 3.12, uv, Node.js 22.12 or later, npm 11.6.2 and Docker with Compose v2 and Linux containers.
+
+```bash
+git clone https://github.com/Jp3528/Documint.git
+cd Documint
 ```
 
-Esta suite comprueba distancia pgvector, ida/vuelta binaria y borrado en MinIO, `/ready` y
-una tarea ejecutada por un worker a través de Redis. Se omite de forma explícita sin la variable;
-el job CI de infraestructura la ejecuta con los tres servicios reales desde una base vacía.
-
-Con Docker disponible, revisa también el historial confirmado antes de publicar:
-
-```sh
-uv run python -m scripts.secret_scan
+```bash
+uv sync --locked --dev
+npx --yes npm@11.6.2 ci
+uv run python -m scripts.init_env
 ```
 
-El escaneo usa Gitleaks fijado, montaje de solo lectura y salida redactada; también corre en CI.
-Complementa la revisión humana de fixtures y documentación. Las estimaciones y condiciones de
-avance se conservan en [docs/planning.md](docs/planning.md).
+**Configuration.** `scripts.init_env` creates `.env` with a random private key and preserves an existing one. See [`.env.example`](.env.example) to customize ports and services. The baseline environment needs no AI keys.
 
-## Estructura
-
-```text
-apps/api/          FastAPI y operaciones HTTP
-apps/worker/       Celery y tareas asíncronas
-apps/web/          React, TypeScript y Vite
-packages/rag/      Recuperación y evidencia, desde la fase 4
-packages/providers/  Contratos y fakes, desde 0C
-packages/parsers/  Extracción documental, desde 3A
-migrations/       Migraciones, desde 0B
-tests/            Pruebas Python por nivel
-evals/            Evaluaciones y preguntas esperadas, desde 0C
-demo_corpus/      Documentos sintéticos, desde 0C
-docs/             Decisiones, avances y evidencia
-infra/            Servicios y despliegue, desde 0B
+```bash
+docker compose up -d --build --wait --wait-timeout 120
+uv run alembic upgrade head
+uv run python -m scripts.init_storage
 ```
 
-## Integración continua
+Start the API and web app in separate terminals:
 
-[CI](https://github.com/Jp3528/Documint/actions/workflows/ci.yml) ejecuta los mismos checks en cada
-push y pull request, con permisos de lectura. Se ampliará conforme existan migraciones,
-infraestructura y reglas de seguridad. El empaquetado de producción corresponde a la fase 8.
+```bash
+uv run uvicorn apps.api.main:app --reload --host 127.0.0.1 --port 8000
+```
 
-## Fragmentos y revisión de índice
+```bash
+npm run dev
+```
 
-`uv run python -m scripts.chunk_job <job_id>` prepara fragmentos inmutables con spans y
-presupuesto/overlap en caracteres. Reserva una revisión con perfil FAKE, sin generar vectores.
-Los valores se ajustan con `DOCUMIND_CHUNK_MAX_CHARACTERS` y `DOCUMIND_CHUNK_OVERLAP_CHARACTERS`.
-La revisión queda CHUNKED, esperando el runner de 3C. La activación interna exige todos los
-vectores y dimensiones reconciliados; cambiar configuración conserva revisiones y evidencia
-anteriores. Ver [ADR 0010](docs/adr/0010-index-revisions.md).
+Web: `http://localhost:5173`. OpenAPI contract: `http://127.0.0.1:8000/docs`. To create a local account, see `uv run python -m scripts.create_user --help`.
+
+To dispatch processing jobs, run these in additional terminals:
+
+```bash
+uv run celery -A apps.worker.celery_app:celery_app worker --pool=solo --queues=celery,documind.processing --loglevel=INFO
+```
+
+```bash
+uv run python -m scripts.dispatch_jobs --watch
+```
+
+### Checks
+
+```bash
+uv run python -m scripts.check
+npm run format:check
+```
+
+The check combines lint, formatting, types, tests and build. Real infrastructure tests require running services and `DOCUMIND_TEST_INFRA=1`; fake providers do not establish semantic quality or real-provider integration. Consult `docs/progress.md` and session evidence before interpreting historical results.
+
+### Structure
+
+| Path                           | Contents                                             |
+| ------------------------------ | ---------------------------------------------------- |
+| [`apps/api/`](apps/api/)       | API and access controls.                             |
+| [`apps/worker/`](apps/worker/) | Asynchronous jobs.                                   |
+| [`apps/web/`](apps/web/)       | React and TypeScript interface.                      |
+| [`packages/`](packages/)       | Parsers, provider contracts and pipeline components. |
+| [`migrations/`](migrations/)   | Alembic migrations.                                  |
+| [`tests/`](tests/)             | Unit and integration tests.                          |
+| [`docs/`](docs/)               | Decisions, progress and evidence.                    |
+
+### Scope
+
+The [current progress log](docs/progress.md) places the project in phase 3: extraction is complete and chunking has local validation; full pipeline integration remains pending. Retrieval, citations and RAG chat belong to later phases. An uploaded or chunked document is not yet search-ready. OCR and external connectors are outside scope. Internal `DOCUMIND_*` names are retained for compatibility; the product is named Documint.
+
+### Documentation
+
+- [Status and session evidence](docs/progress.md)
+- [Architecture](docs/adr/0001-architecture.md)
+- [Access matrix](docs/access-matrix.md)
+- [Threat model](docs/threat-model.md)
+- [Local services and maintenance](infra/README.md)
+- [Corpus and evaluation](evals/README.md)
