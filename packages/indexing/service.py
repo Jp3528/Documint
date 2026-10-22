@@ -1,5 +1,6 @@
 import hashlib
 import json
+from collections.abc import Callable
 from uuid import NAMESPACE_URL, UUID, uuid5
 
 from sqlalchemy import func, select
@@ -10,10 +11,12 @@ from packages.documents.models import Document, DocumentVersion
 from packages.identity.organization import ConflictError, NotFoundError
 from packages.parsers.contracts import TextBlock
 from packages.parsers.service import ExtractionService
+from packages.providers.contracts import EmbeddingProvider, ProviderError
+from packages.providers.validation import embedding_profile, validate_batch
 from packages.storage import ObjectStorage
 
 from .chunking import ChunkConfig, EmbeddingProfile, chunk_blocks
-from .models import ChunkEmbedding, IndexChunk, IndexRevision
+from .models import ChunkEmbedding, EmbeddingCall, IndexChunk, IndexRevision
 
 
 class IndexService:
@@ -94,7 +97,81 @@ class IndexService:
         self.db.commit()
         return revision
 
-    def activate(self, revision_id: UUID) -> bool:
+    def embed(
+        self,
+        revision_id: UUID,
+        provider: EmbeddingProvider,
+        checkpoint: Callable[[], None] = lambda: None,
+    ) -> None:
+        revision = self.db.get(IndexRevision, revision_id)
+        if revision is None:
+            raise NotFoundError
+        if embedding_profile(provider.model).model_dump() != revision.embedding_profile:
+            raise ProviderError("EMBEDDING_MODEL_MISMATCH")
+        while True:
+            checkpoint()
+            chunks = list(
+                self.db.scalars(
+                    select(IndexChunk)
+                    .outerjoin(ChunkEmbedding)
+                    .where(
+                        IndexChunk.index_revision_id == revision_id,
+                        ChunkEmbedding.chunk_id.is_(None),
+                    )
+                    .order_by(IndexChunk.position)
+                    .limit(32)
+                )
+            )
+            self.db.commit()  # No database locks while the external provider is running.
+            if not chunks:
+                return
+            batch = provider.embed([chunk.text for chunk in chunks])
+            validate_batch(batch, provider.model, len(chunks))
+            checkpoint()  # Fence expired/replaced workers before accepting their result.
+            locked = self.db.scalar(
+                select(IndexRevision)
+                .where(IndexRevision.id == revision_id)
+                .with_for_update()
+                .execution_options(populate_existing=True)
+            )
+            assert locked
+            existing = set(
+                self.db.scalars(
+                    select(ChunkEmbedding.chunk_id).where(
+                        ChunkEmbedding.chunk_id.in_([chunk.id for chunk in chunks])
+                    )
+                )
+            )
+            for chunk, vector in zip(chunks, batch.vectors, strict=True):
+                if chunk.id not in existing:
+                    self.db.add(
+                        ChunkEmbedding(
+                            chunk_id=chunk.id, dimensions=len(vector), embedding=list(vector)
+                        )
+                    )
+            self.db.add(
+                EmbeddingCall(
+                    index_revision_id=revision_id,
+                    chunk_count=len(chunks),
+                    input_tokens=batch.usage.input_tokens,
+                    observed_cost_usd=batch.usage.observed_cost_usd,
+                )
+            )
+            self.db.flush()
+            if locked.status != "READY":
+                locked.status = "INDEXING"
+                locked.indexed_count = (
+                    self.db.scalar(
+                        select(func.count())
+                        .select_from(ChunkEmbedding)
+                        .join(IndexChunk)
+                        .where(IndexChunk.index_revision_id == revision_id)
+                    )
+                    or 0
+                )
+            self.db.commit()
+
+    def activate(self, revision_id: UUID, *, commit: bool = True) -> bool:
         revision = self.db.get(IndexRevision, revision_id)
         if revision is None:
             raise NotFoundError
@@ -155,5 +232,8 @@ class IndexService:
         if activate:
             document.active_index_revision_id = revision.id
         version.status = "READY"
-        self.db.commit()
+        if commit:
+            self.db.commit()
+        else:
+            self.db.flush()
         return activate

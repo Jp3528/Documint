@@ -8,9 +8,12 @@ from uuid import UUID
 from sqlalchemy import and_, or_, select, true
 from sqlalchemy.orm import Session
 
+from packages.config import Settings, get_settings
 from packages.documents.models import DocumentVersion
 from packages.identity.organization import ConflictError
 from packages.identity.security import utcnow
+from packages.providers.contracts import EmbeddingProvider
+from packages.storage import ObjectStorage
 
 from .models import ProcessingJob
 
@@ -36,6 +39,14 @@ def dispatch_pending(
                         ProcessingJob.status == "QUEUED",
                         ProcessingJob.queued_at < now - timedelta(minutes=5),
                     ),
+                    ProcessingJob.status == "WAITING_PIPELINE",
+                    and_(
+                        ProcessingJob.status == "RUNNING",
+                        or_(
+                            ProcessingJob.lease_expires_at <= now,
+                            ProcessingJob.lease_expires_at.is_(None),
+                        ),
+                    ),
                 )
             )
             .where(ProcessingJob.id.in_(only_job_ids) if only_job_ids is not None else true())
@@ -52,7 +63,7 @@ def dispatch_pending(
         if job is None:
             db.rollback()
             continue
-        if job.status not in {"PENDING", "QUEUED"}:
+        if job.status not in {"PENDING", "QUEUED", "WAITING_PIPELINE", "RUNNING"}:
             db.rollback()
             continue
         if (
@@ -63,6 +74,9 @@ def dispatch_pending(
             db.rollback()
             continue
         if job.status == "PENDING" and job.next_dispatch_at > utcnow():
+            db.rollback()
+            continue
+        if job.status == "RUNNING" and job.lease_expires_at and job.lease_expires_at > utcnow():
             db.rollback()
             continue
         if job.dispatch_attempts >= 5:
@@ -91,19 +105,19 @@ def dispatch_pending(
     return counts
 
 
-def process_job(db: Session, job_id: UUID) -> str:
-    job = db.scalar(select(ProcessingJob).where(ProcessingJob.id == job_id).with_for_update())
-    if job is None:
-        return "NOT_FOUND"
-    if job.status not in {"PENDING", "QUEUED"}:
-        return job.status
-    # Phase 2C has no production parser/index runner. Acknowledge once, without retrying or lying.
-    job.status, job.stage, job.error_code = "WAITING_PIPELINE", "WAITING_PIPELINE", None
-    version = db.get(DocumentVersion, job.version_id)
-    if version:
-        version.status = "QUEUED"
-    db.commit()
-    return job.status
+def process_job(
+    db: Session,
+    job_id: UUID,
+    *,
+    settings: Settings | None = None,
+    storage: ObjectStorage | None = None,
+    provider: EmbeddingProvider | None = None,
+) -> str:
+    from .pipeline import process_pipeline
+
+    return process_pipeline(
+        db, job_id, settings or get_settings(), storage=storage, provider=provider
+    )
 
 
 def retry_job(db: Session, job: ProcessingJob) -> ProcessingJob:
@@ -113,5 +127,6 @@ def retry_job(db: Session, job: ProcessingJob) -> ProcessingJob:
         raise ConflictError("El trabajo no admite más intentos")
     job.status, job.stage, job.error_code = "PENDING", "STORED", None
     job.dispatch_attempts, job.queued_at, job.next_dispatch_at = 0, None, utcnow()
+    job.run_token, job.lease_expires_at = None, None
     db.commit()
     return job

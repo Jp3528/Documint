@@ -127,6 +127,7 @@ class DocumentView(BaseModel):
     can_manage: bool
     created_at: datetime
     latest_version: VersionView | None
+    active_index_revision_id: UUID | None
 
 
 def document_view(document: Document, service: LibraryService) -> DocumentView:
@@ -145,6 +146,7 @@ def document_view(document: Document, service: LibraryService) -> DocumentView:
         can_manage=service.may_manage(document),
         created_at=document.created_at,
         latest_version=version_view(document, latest) if latest else None,
+        active_index_revision_id=document.active_index_revision_id,
     )
 
 

@@ -1,4 +1,4 @@
-"""Celery configuration without document processing or provider calls."""
+"""Bounded, at-least-once Celery delivery for the document pipeline."""
 
 from celery import Celery
 

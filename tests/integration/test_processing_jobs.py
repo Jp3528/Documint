@@ -109,17 +109,18 @@ def test_enqueue_is_idempotent_authorized_and_has_no_ready_shortcut(jobs: JobHar
     assert listed.json()["items"][0]["status"] == "PENDING"
 
 
-def test_duplicate_delivery_waits_for_pipeline_without_consuming_attempts(jobs: JobHarness) -> None:
+def test_duplicate_delivery_does_not_repeat_failed_execution(jobs: JobHarness) -> None:
     sent: list[UUID] = []
     with jobs.factory() as db:
         assert dispatch_pending(db, sent.append)["queued"] == 1
         assert sent == [jobs.job_id]
-        assert process_job(db, jobs.job_id) == "WAITING_PIPELINE"
-        assert process_job(db, jobs.job_id) == "WAITING_PIPELINE"
+        # Deliberately missing original: the real pipeline reports a bounded failure.
+        assert process_job(db, jobs.job_id) == "FAILED"
+        assert process_job(db, jobs.job_id) == "FAILED"
         job = db.get(ProcessingJob, jobs.job_id)
         version = db.get(DocumentVersion, jobs.version_id)
-        assert job and job.attempts == 0 and job.stage == "WAITING_PIPELINE"
-        assert version and version.status == "QUEUED"
+        assert job and job.attempts == 1 and job.error_code == "STORAGE_READ_FAILED"
+        assert version and version.status == "FAILED"
         assert dispatch_pending(db, sent.append) == {"queued": 0, "deferred": 0, "failed": 0}
 
 

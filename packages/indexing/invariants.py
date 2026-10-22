@@ -15,7 +15,7 @@ def install_invariant(target: Table, connection: Connection, **kwargs: Any) -> N
     if target.name in {"index_chunks", "chunk_embeddings"}:
         connection.exec_driver_sql(f"""CREATE OR REPLACE FUNCTION {quoted}.immutable_index_row()
         RETURNS trigger LANGUAGE plpgsql AS $$
-        DECLARE revision_id uuid; revision_state text;
+        DECLARE revision_id uuid; revision_state text; expected_dimensions integer;
         BEGIN
           IF TG_OP != 'INSERT' THEN
             RAISE EXCEPTION 'index evidence is immutable' USING ERRCODE='23514';
@@ -24,13 +24,22 @@ def install_invariant(target: Table, connection: Connection, **kwargs: Any) -> N
           ELSE SELECT index_revision_id INTO revision_id FROM {quoted}.index_chunks
             WHERE id=NEW.chunk_id;
           END IF;
-          SELECT status INTO revision_state FROM {quoted}.index_revisions
+          SELECT status, (embedding_profile->>'dimensions')::integer
+            INTO revision_state, expected_dimensions FROM {quoted}.index_revisions
             WHERE id=revision_id FOR SHARE;
+          IF TG_TABLE_NAME = 'chunk_embeddings' THEN
+            IF NEW.dimensions IS DISTINCT FROM expected_dimensions THEN
+              RAISE EXCEPTION 'embedding profile dimensions mismatch' USING ERRCODE='23514';
+            END IF;
+          END IF;
           IF revision_state = 'READY' THEN
             RAISE EXCEPTION 'published index is immutable' USING ERRCODE='23514';
           END IF;
           RETURN NEW;
         END $$""")
+        connection.exec_driver_sql(
+            f"DROP TRIGGER IF EXISTS immutable_index_row ON {quoted}.{table}"
+        )
         connection.exec_driver_sql(
             f"CREATE TRIGGER immutable_index_row BEFORE INSERT OR UPDATE OR DELETE "
             f"ON {quoted}.{table} FOR EACH ROW EXECUTE FUNCTION {quoted}.immutable_index_row()"
@@ -40,6 +49,13 @@ def install_invariant(target: Table, connection: Connection, **kwargs: Any) -> N
         RETURNS trigger LANGUAGE plpgsql AS $$
         DECLARE chunks bigint; vectors bigint;
         BEGIN
+          IF TG_OP = 'UPDATE' AND ROW(NEW.id, NEW.version_id, NEW.extraction_id,
+            NEW.generation, NEW.fingerprint, NEW.chunk_config, NEW.embedding_profile,
+            NEW.chunk_count, NEW.created_at) IS DISTINCT FROM ROW(OLD.id, OLD.version_id,
+            OLD.extraction_id, OLD.generation, OLD.fingerprint, OLD.chunk_config,
+            OLD.embedding_profile, OLD.chunk_count, OLD.created_at) THEN
+            RAISE EXCEPTION 'index configuration is immutable' USING ERRCODE='23514';
+          END IF;
           IF TG_OP = 'UPDATE' AND OLD.status='READY' AND NEW IS DISTINCT FROM OLD THEN
             RAISE EXCEPTION 'published revision is immutable' USING ERRCODE='23514';
           END IF;
@@ -56,6 +72,7 @@ def install_invariant(target: Table, connection: Connection, **kwargs: Any) -> N
           END IF;
           RETURN NEW;
         END $$""")
+        connection.exec_driver_sql(f"DROP TRIGGER IF EXISTS guard_index_ready ON {quoted}.{table}")
         connection.exec_driver_sql(
             f"CREATE TRIGGER guard_index_ready BEFORE INSERT OR UPDATE ON {quoted}.{table} "
             f"FOR EACH ROW EXECUTE FUNCTION {quoted}.guard_index_ready()"

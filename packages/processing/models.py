@@ -30,6 +30,9 @@ class ProcessingJob(Base):
     max_attempts: Mapped[int] = mapped_column(default=3, server_default="3")
     dispatch_attempts: Mapped[int] = mapped_column(default=0, server_default="0")
     error_code: Mapped[str | None] = mapped_column(String(48))
+    run_token: Mapped[UUID | None] = mapped_column()
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    index_revision_id: Mapped[UUID | None] = mapped_column(ForeignKey("index_revisions.id"))
     queued_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     next_dispatch_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

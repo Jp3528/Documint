@@ -1,13 +1,15 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Body, HTTPException
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import func, select
+from sqlalchemy.orm import Session
 
 from packages.documents.models import DocumentVersion
 from packages.identity.organization import NotFoundError
+from packages.indexing.models import IndexRevision
 from packages.processing.enqueue import ensure_job
 from packages.processing.models import ProcessingJob
 from packages.processing.service import retry_job
@@ -29,12 +31,22 @@ class JobView(BaseModel):
     max_attempts: int
     dispatch_attempts: int
     error_code: str | None
+    index_revision_id: UUID | None
+    embedding_mode: Literal["FAKE", "REAL"] | None = None
     created_at: datetime
     updated_at: datetime
 
 
 class EmptyInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+
+def job_view(job: ProcessingJob, db: Session) -> JobView:
+    result = JobView.model_validate(job)
+    revision = db.get(IndexRevision, job.index_revision_id) if job.index_revision_id else None
+    if revision:
+        result.embedding_mode = revision.embedding_profile["mode"]
+    return result
 
 
 @router.get("/{document_id}/versions/{version_id}/jobs", response_model=Page[JobView])
@@ -50,7 +62,7 @@ def list_jobs(
         .limit(params.limit)
     )
     return Page(
-        items=[JobView.model_validate(row) for row in rows], total=total, **params.model_dump()
+        items=[job_view(row, service.db) for row in rows], total=total, **params.model_dump()
     )
 
 
@@ -60,14 +72,14 @@ def enqueue(
     version_id: UUID,
     service: Service,
     payload: Annotated[EmptyInput | None, Body()] = None,
-) -> ProcessingJob:
+) -> JobView:
     service.document(document_id, manage=True)
     _, version = service.version(document_id, version_id)
     if version.status in {"UPLOADING", "UPLOAD_FAILED"}:
         raise HTTPException(409, "Primero debe completarse la carga del original")
     job = ensure_job(service.db, version_id, service.pipeline_key)
     service.db.commit()
-    return job
+    return job_view(job, service.db)
 
 
 @router.post("/{document_id}/jobs/{job_id}/retry", status_code=202, response_model=JobView)
@@ -76,7 +88,7 @@ def retry(
     job_id: UUID,
     service: Service,
     payload: Annotated[EmptyInput | None, Body()] = None,
-) -> ProcessingJob:
+) -> JobView:
     service.document(document_id, manage=True)
     job = service.db.scalar(
         select(ProcessingJob)
@@ -86,4 +98,4 @@ def retry(
     )
     if job is None:
         raise NotFoundError
-    return retry_job(service.db, job)
+    return job_view(retry_job(service.db, job), service.db)

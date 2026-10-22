@@ -6,6 +6,14 @@ from decimal import Decimal
 from typing import Literal, Protocol
 
 
+class ProviderError(Exception):
+    """Safe diagnostic code. Never include credentials, input text or provider responses."""
+
+    def __init__(self, code: str) -> None:
+        self.code = code
+        super().__init__(code)
+
+
 @dataclass(frozen=True)
 class ModelInfo:
     name: str

@@ -72,3 +72,19 @@ it("explains a document without text and hides retry after the execution limit",
   expect(await screen.findByRole("alert")).toHaveTextContent("no contiene texto extraíble");
   expect(screen.queryByRole("button")).not.toBeInTheDocument();
 });
+
+it("identifies completed fake indexes as demonstration mode", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () =>
+      response({
+        ...page("SUCCEEDED"),
+        items: [{ ...job, status: "SUCCEEDED", embedding_mode: "FAKE" }],
+      }),
+    ),
+  );
+  render(<ProcessingPanel documentId={documentId} versionId={versionId} canManage />);
+  expect(await screen.findByText(/Modo de demostración/)).toBeInTheDocument();
+  expect(screen.getByText("Procesamiento completado")).toBeInTheDocument();
+  expect(screen.queryByRole("button")).not.toBeInTheDocument();
+});

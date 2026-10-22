@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -7,6 +8,7 @@ from sqlalchemy import (
     CheckConstraint,
     DateTime,
     ForeignKey,
+    Numeric,
     String,
     Text,
     UniqueConstraint,
@@ -76,6 +78,22 @@ class ChunkEmbedding(Base):
     chunk_id: Mapped[UUID] = mapped_column(ForeignKey("index_chunks.id"), primary_key=True)
     dimensions: Mapped[int] = mapped_column()
     embedding: Mapped[list[float]] = mapped_column(VECTOR())
+
+
+class EmbeddingCall(Base):
+    """Successful batch receipts; unknown external costs remain NULL, never guessed as zero."""
+
+    __tablename__ = "embedding_calls"
+    __table_args__ = (
+        CheckConstraint("chunk_count > 0 AND input_tokens >= 0", name="counts_valid"),
+        CheckConstraint("observed_cost_usd >= 0", name="cost_valid"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    index_revision_id: Mapped[UUID] = mapped_column(ForeignKey("index_revisions.id"), index=True)
+    chunk_count: Mapped[int] = mapped_column()
+    input_tokens: Mapped[int | None] = mapped_column()
+    observed_cost_usd: Mapped[Decimal | None] = mapped_column(Numeric(20, 10))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 for model in [Document, IndexRevision, IndexChunk, ChunkEmbedding]:

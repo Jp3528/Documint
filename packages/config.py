@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     parser_max_pdf_pages: int = Field(default=1000, ge=1, le=10_000)
     chunk_max_characters: int = Field(default=1200, ge=8, le=12000)
     chunk_overlap_characters: int = Field(default=150, ge=0)
+    embedding_provider: Literal["fake", "openai"] = "fake"
+    openai_api_key: SecretStr | None = None
+    embedding_model: str = Field(default="text-embedding-3-small", min_length=1, max_length=128)
+    embedding_revision: str = Field(default="deployment-1", min_length=1, max_length=128)
+    embedding_dimensions: int = Field(default=1536, ge=1, le=4096)
 
     @model_validator(mode="after")
     def valid_chunk_overlap(self) -> "Settings":

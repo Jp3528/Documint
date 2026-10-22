@@ -674,7 +674,14 @@ def test_revision_activation_requires_complete_vectors_and_preserves_old_evidenc
             )
 
 
-@pytest.mark.parametrize("vector,dimensions", [([0.0] * 16, 16), ([1.0] * 16, 15)])
+@pytest.mark.parametrize(
+    "vector,dimensions",
+    [
+        ([0.0] * 16, 16),
+        ([1.0] * 16, 15),
+        ([1.0] * 32, 32),
+    ],
+)
 def test_invalid_vectors_cannot_enter_the_physical_index(
     uploads: UploadHarness, vector: list[float], dimensions: int
 ) -> None:

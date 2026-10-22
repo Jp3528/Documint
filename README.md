@@ -8,14 +8,14 @@
 
 ### Descripción
 
-Plataforma de conocimiento documental en desarrollo, orientada a gestionar fuentes con permisos y construir respuestas respaldadas por evidencia. La implementación actual cubre identidad, biblioteca versionada, almacenamiento privado, trabajos de procesamiento y etapas de extracción y fragmentación.
+Plataforma de conocimiento documental en desarrollo, orientada a gestionar fuentes con permisos y construir respuestas respaldadas por evidencia. La implementación actual cubre identidad, biblioteca versionada, almacenamiento privado y un pipeline completo de extracción, fragmentación e indexación vectorial.
 
 ### Funcionalidades
 
 - Autenticación con access tokens, rotación de refresh y administración de usuarios y departamentos.
 - Biblioteca con permisos, versiones inmutables y originales en almacenamiento S3 privado.
 - Carga validada de PDF, DOCX, TXT y Markdown.
-- Cola de procesamiento con Redis/Celery, parsers con procedencia y fragmentación.
+- Pipeline con Redis/Celery, parsers con procedencia, fragmentación e índices pgvector versionados.
 - Corpus sintético, proveedores fake deterministas y evidencia de avance por sesión.
 
 ### Tecnologías
@@ -90,7 +90,7 @@ El check reúne lint, formato, tipos, pruebas y build. Las pruebas con infraestr
 
 ### Alcance
 
-El [seguimiento actual](docs/progress.md) sitúa el proyecto en la fase 3: extracción terminada y fragmentación con validación local; la conexión completa del pipeline continúa pendiente. Recuperación, citas y chat RAG corresponden a fases posteriores. Un documento cargado o fragmentado todavía no se considera listo para búsqueda. No incluye OCR ni conectores externos. Los nombres internos `DOCUMIND_*` se conservan por compatibilidad; el producto se llama Documint.
+El [seguimiento actual](docs/progress.md) sitúa el proyecto en la fase 3: el pipeline conecta extracción, fragmentación, embeddings y activación atómica. Recuperación, citas y chat RAG corresponden a fases posteriores. READY exige un índice completo; el modo local FAKE no acredita calidad semántica. El [adaptador real y su configuración](docs/adr/0011-embedding-pipeline.md) están separados de las evaluaciones reales pendientes en 4R. No incluye OCR ni conectores externos. Los nombres internos `DOCUMIND_*` se conservan por compatibilidad; el producto se llama Documint.
 
 ### Documentación
 
@@ -109,14 +109,14 @@ El [seguimiento actual](docs/progress.md) sitúa el proyecto en la fase 3: extra
 
 ### Overview
 
-A document knowledge platform under development, designed to manage permission-controlled sources and build evidence-backed answers. The current implementation covers identity, a versioned library, private storage, processing jobs, extraction and chunking stages.
+A document knowledge platform under development, designed to manage permission-controlled sources and build evidence-backed answers. The current implementation covers identity, a versioned library, private storage and a complete extraction, chunking and vector-indexing pipeline.
 
 ### Features
 
 - Authentication with access tokens, refresh rotation, and user and department administration.
 - A permission-controlled library with immutable versions and originals in private S3 storage.
 - Validated PDF, DOCX, TXT and Markdown uploads.
-- Redis/Celery processing queue, provenance-aware parsers and chunking.
+- Redis/Celery pipeline, provenance-aware parsers, chunking and versioned pgvector indexes.
 - Synthetic corpus, deterministic fake providers and session-by-session progress evidence.
 
 ### Technology
@@ -191,7 +191,7 @@ The check combines lint, formatting, types, tests and build. Real infrastructure
 
 ### Scope
 
-The [current progress log](docs/progress.md) places the project in phase 3: extraction is complete and chunking has local validation; full pipeline integration remains pending. Retrieval, citations and RAG chat belong to later phases. An uploaded or chunked document is not yet search-ready. OCR and external connectors are outside scope. Internal `DOCUMIND_*` names are retained for compatibility; the product is named Documint.
+The [current progress log](docs/progress.md) places the project in phase 3: extraction, chunking, embeddings and atomic activation now form a complete pipeline. Retrieval, citations and RAG chat belong to later phases. READY requires a complete physical index; local FAKE mode does not establish semantic quality. The [real adapter and its configuration](docs/adr/0011-embedding-pipeline.md) are separate from the real evaluations pending in 4R. OCR and external connectors are outside scope. Internal `DOCUMIND_*` names are retained for compatibility; the product is named Documint.
 
 ### Documentation
 

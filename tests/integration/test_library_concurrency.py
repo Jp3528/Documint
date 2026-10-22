@@ -155,7 +155,7 @@ def test_published_message_survives_dispatch_commit_interruption(
         db.rollback()
     assert sent == [job_id]
     with concurrent_db() as db:
-        assert process_job(db, job_id) == "WAITING_PIPELINE"
-        assert process_job(db, job_id) == "WAITING_PIPELINE"
+        assert process_job(db, job_id) == "FAILED"
+        assert process_job(db, job_id) == "FAILED"
         stored = db.get(ProcessingJob, job_id)
-        assert stored and stored.attempts == 0
+        assert stored and stored.attempts == 1 and stored.error_code == "STORAGE_READ_FAILED"

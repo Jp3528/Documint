@@ -11,6 +11,7 @@ const jobsPage = pageSchema(
     attempts: z.number().int().nonnegative(),
     max_attempts: z.number().int().positive(),
     error_code: z.string().nullable(),
+    embedding_mode: z.enum(["FAKE", "REAL"]).nullable().optional(),
   }),
 );
 const labels: Record<string, string> = {
@@ -39,7 +40,7 @@ export function ProcessingPanel({
   const resource = useResource(`${base}/versions/${versionId}/jobs?limit=1`, jobsPage, revision);
   const job = resource.data?.items[0];
   useEffect(() => {
-    if (!job || !["PENDING", "QUEUED", "RUNNING"].includes(job.status)) return;
+    if (!job || !["PENDING", "QUEUED", "RUNNING", "WAITING_PIPELINE"].includes(job.status)) return;
     const timer = window.setTimeout(() => setRevision((value) => value + 1), 5000);
     return () => window.clearTimeout(timer);
   }, [job, revision]);
@@ -78,6 +79,11 @@ export function ProcessingPanel({
           {job?.status !== "SUCCEEDED" && (
             <p className="muted">
               Tu original está guardado. Todavía no está disponible para búsqueda.
+            </p>
+          )}
+          {job?.embedding_mode === "FAKE" && (
+            <p className="muted">
+              Modo de demostración: la búsqueda semántica requiere embeddings reales.
             </p>
           )}
           {!!job?.attempts && (
