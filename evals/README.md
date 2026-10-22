@@ -14,3 +14,15 @@ permisos de los casos. Aprobar estos checks no significa haber medido retrieval 
 CI usa fakes sin llamadas de IA. Las evaluaciones reales se ejecutan explícitamente en 4R/5R
 y sus resultados se separarán de las pruebas técnicas conforme a ADR 0004. La administración
 del dataset se implementa en 6B.
+
+Para importar los ocho originales con ACL y versiones verificadas:
+
+```bash
+uv run python -m scripts.seed_corpus --demo
+```
+
+El flag opcional `--process` completa el pipeline con el proveedor configurado. El valor local
+`DOCUMIND_EMBEDDING_PROVIDER=fake` produce índices de demostración, sin calidad semántica.
+El importador reutiliza sus IDs/versiones y detecta conflictos de metadata o grants; no corrige
+ediciones del operador. Sincroniza roles/membresías de identidades demo y conserva contraseñas
+y estados existentes. Nunca ejecutar estos seeds sobre datos de producción.
