@@ -26,6 +26,7 @@ from packages.providers.contracts import EmbeddingBatch, ProviderError
 from packages.providers.fake import FakeEmbeddingProvider
 from packages.providers.validation import embedding_profile
 from packages.retrieval.contracts import SearchRequest
+from packages.retrieval.fusion import FusionConfig
 from packages.retrieval.service import RetrievalService
 from packages.storage import S3Storage
 from scripts.seed_corpus import corpus_document_id, demo_manifest, identity_id, seed_corpus
@@ -267,4 +268,29 @@ def test_acl_revocation_during_query_embedding_excludes_evidence(
             query="Atlas" if revocation == "grant" else "datos",
             document_id=corpus_document_id("incident" if revocation == "grant" else "runbook"),
         )
-        assert not retrieval.vector(request, RevokingProvider()).candidates
+        assert not retrieval.hybrid(request, RevokingProvider()).candidates
+
+
+def test_hybrid_is_deduplicated_diverse_and_configuration_is_visible(
+    indexed: SearchHarness,
+) -> None:
+    h = indexed
+    with h.factory() as db:
+        retrieval = service(db, "engineer")
+        request = SearchRequest(query="viajes", method="hybrid", limit=10)
+        result = retrieval.hybrid(
+            request, FakeEmbeddingProvider(), FusionConfig(max_per_document=1)
+        )
+        assert result.method == "hybrid" and result.embedding_mode == "FAKE"
+        assert result.configuration and result.configuration["max_per_document"] == 1
+        assert len({c.document_id for c in result.candidates}) == len(result.candidates)
+        assert len({c.chunk_id for c in result.candidates}) == len(result.candidates)
+        assert result == retrieval.hybrid(
+            request, FakeEmbeddingProvider(), FusionConfig(max_per_document=1)
+        )
+        with patch.object(FakeEmbeddingProvider, "embed") as embed:
+            lexical_only = retrieval.hybrid(
+                request, FakeEmbeddingProvider(), FusionConfig(vector_weight=0)
+            )
+            embed.assert_not_called()
+            assert lexical_only.candidates and lexical_only.embedding_mode is None

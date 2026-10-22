@@ -25,4 +25,7 @@ def search(
     service = RetrievalService(db, load_actor(db, user))
     if payload.method == "lexical":
         return service.lexical(payload)
-    return service.vector(payload, make_embedding_provider(settings))
+    provider = make_embedding_provider(settings)
+    if payload.method == "hybrid":
+        return service.hybrid(payload, provider)
+    return service.vector(payload, provider)

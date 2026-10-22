@@ -13,15 +13,25 @@ from packages.identity.organization import load_actor
 from packages.identity.policies import Actor
 from packages.indexing.chunking import EmbeddingProfile
 from packages.indexing.models import ChunkEmbedding, IndexChunk, IndexRevision
-from packages.providers.contracts import EmbeddingProvider
+from packages.providers.contracts import EmbeddingProvider, Usage
 from packages.providers.validation import embedding_profile, validate_batch
 
 from .contracts import Candidate, RetrievalResult, SearchRequest
+from .fusion import DEFAULT_FUSION, FusionConfig, fuse
 
 
 class RetrievalService:
     def __init__(self, db: Session, actor: Actor) -> None:
         self.db, self.actor = db, actor
+
+    def _refresh_actor(self) -> bool:
+        user = self.db.scalar(
+            select(User).where(User.id == self.actor.id).execution_options(populate_existing=True)
+        )
+        if user is None:
+            return False
+        self.actor = load_actor(self.db, user)
+        return self.actor.active
 
     def _scope(self, request: SearchRequest, profile: EmbeddingProfile | None = None) -> CTE:
         query = (
@@ -116,12 +126,8 @@ class RetrievalService:
         self.db.commit()  # No locks during provider calls. The retrieval query rechecks SQL ACL.
         batch = provider.embed([request.query])
         validate_batch(batch, provider.model, 1)
-        user = self.db.scalar(
-            select(User).where(User.id == self.actor.id).execution_options(populate_existing=True)
-        )
-        if user is None:
+        if not self._refresh_actor():
             return empty.model_copy(update={"usage": batch.usage})
-        self.actor = load_actor(self.db, user)
         scope = self._scope(request, embedding_profile(provider.model))
         distance = scope.c.embedding.cosine_distance(list(batch.vectors[0]))
         score = (1 - distance).label("score")
@@ -129,3 +135,37 @@ class RetrievalService:
         return empty.model_copy(
             update={"candidates": self._candidates(query), "usage": batch.usage}
         )
+
+    def hybrid(
+        self,
+        request: SearchRequest,
+        provider: EmbeddingProvider,
+        config: FusionConfig = DEFAULT_FUSION,
+    ) -> RetrievalResult:
+        pool = request.model_copy(update={"limit": config.candidate_pool})
+        vector = self.vector(pool, provider) if config.vector_weight else None
+        lexical = self.lexical(pool) if config.lexical_weight else None
+        result = RetrievalResult(
+            method="hybrid",
+            strategy_version=config.version,
+            configuration=config.model_dump(),
+            embedding_mode=vector.embedding_mode if vector else None,
+            candidates=(),
+            usage=vector.usage if vector else Usage(),
+        )
+        if not self._refresh_actor():
+            return result
+        lexical_rows = lexical.candidates if lexical else ()
+        vector_rows = vector.candidates if vector else ()
+        ids = {row.chunk_id for row in (*lexical_rows, *vector_rows)}
+        if not ids:
+            return result
+        scope = self._scope(request)
+        allowed = set(self.db.scalars(select(scope.c.chunk_id).where(scope.c.chunk_id.in_(ids))))
+        ranked = fuse(
+            [row for row in lexical_rows if row.chunk_id in allowed],
+            [row for row in vector_rows if row.chunk_id in allowed],
+            request.limit,
+            config,
+        )
+        return result.model_copy(update={"candidates": ranked})

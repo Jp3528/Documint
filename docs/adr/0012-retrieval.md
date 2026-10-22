@@ -39,3 +39,13 @@ Empates se resuelven por UUID de chunk para garantizar orden repetible. Se devue
 texto, hash y spans de chunks físicos inmutables, nunca claves S3 ni vectores. La construcción
 de citas navegables y snippets pertenece a 4C. Los resultados llevan `no-store` y los fallos
 del proveedor se convierten en 503 genérico sin mensajes de red o credenciales.
+
+## Fusión de rangos
+
+`weighted-rrf-v1` suma `peso / (constante + rango)` por chunk único y por retriever. El valor
+inicial es constante 60, pesos FTS/vector 1/1, pool 50 y un máximo de 3 chunks por documento.
+Se publica la configuración completa porque cambiar pesos/diversidad cambia los resultados.
+La diversidad se aplica después de ordenar; puede reducir el número final de resultados.
+No hay combinación de escalas crudas, reranker externo ni llamadas LLM durante la búsqueda.
+Un fallo del proveedor vectorial se devuelve explícitamente, sin esconderlo como éxito híbrido.
+Antes de fusionar se comprueban nuevamente ACL y revisión activa sobre ambos conjuntos.

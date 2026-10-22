@@ -10,7 +10,7 @@ from packages.providers.contracts import Usage
 class SearchRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     query: str = Field(min_length=1, max_length=1000)
-    method: Literal["lexical", "vector"] = "lexical"
+    method: Literal["lexical", "vector", "hybrid"] = "lexical"
     limit: int = Field(default=10, ge=1, le=50)
     department_id: UUID | None = None
     document_id: UUID | None = None
@@ -33,8 +33,9 @@ class Candidate(BaseModel):
 
 
 class RetrievalResult(BaseModel):
-    method: Literal["lexical", "vector"]
+    method: Literal["lexical", "vector", "hybrid"]
     strategy_version: str
     embedding_mode: Literal["FAKE", "REAL"] | None
     candidates: tuple[Candidate, ...]
     usage: Usage = Usage()
+    configuration: dict[str, str | int | float] | None = None
