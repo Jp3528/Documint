@@ -1,1 +1,1 @@
-"""Retrieval, context and evidence boundaries; implemented from phase 4 onward."""
+"""Grounded answers with explicit evidence and current authorization."""

@@ -26,6 +26,8 @@ from packages.processing.service import process_job
 from packages.providers.contracts import EmbeddingBatch, ProviderError
 from packages.providers.fake import FakeEmbeddingProvider
 from packages.providers.validation import embedding_profile
+from packages.rag.context import ContextBudgetError, ContextBuilder, ContextConfig
+from packages.rag.prompts import token_upper_bound
 from packages.retrieval.citations import CitationService
 from packages.retrieval.contracts import SearchRequest
 from packages.retrieval.fusion import FusionConfig
@@ -408,3 +410,67 @@ def test_natural_questions_match_any_normalized_term_but_explicit_syntax_is_pres
             SearchRequest(query='"7 días naturales" -viajes', document_id=document)
         ).candidates
         assert not retrieval.lexical(SearchRequest(query="de la", document_id=document)).candidates
+
+
+def test_context_budget_immutable_ids_dedup_and_current_permissions(indexed: SearchHarness) -> None:
+    h = indexed
+    with h.factory() as db:
+        retrieval = service(db, "engineer")
+        rows = retrieval.lexical(
+            SearchRequest(query="Lumen OR viajes OR datos", limit=50)
+        ).candidates
+        assert rows
+        config = ContextConfig(token_budget=4000, max_chunks=3, max_per_document=1)
+        builder = ContextBuilder(db, retrieval.actor, config)
+        context = builder.build("¿Qué dicen las fuentes?", (*rows, *rows))
+        assert context.token_upper_bound == token_upper_bound(context.request) <= 4000
+        assert 0 < len(context.source_ids) <= 3
+        assert len(set(context.source_ids)) == len(context.source_ids)
+        assert [item.source_id for item in context.request.evidence] == [
+            str(key) for key in context.source_ids
+        ]
+        sources = CitationService(db, retrieval.actor).sources(context.source_ids)
+        assert len({source.document_id for source in sources.values()}) == len(sources)
+        assert all(
+            item.text == sources[UUID(item.source_id)].text for item in context.request.evidence
+        )
+        for doc_id in {row.document_id for row in rows}:
+            document = db.get(Document, doc_id)
+            assert document
+            document.archived = True
+        db.commit()
+        assert not builder.build("¿Qué dicen las fuentes?", rows).source_ids
+        with pytest.raises(ContextBudgetError):
+            ContextBuilder(db, retrieval.actor, ContextConfig(token_budget=1024)).build(
+                "文" * 1000, ()
+            )
+
+
+def test_context_neighbors_stay_inside_the_same_active_authorized_revision(
+    indexed: SearchHarness,
+) -> None:
+    h = indexed
+    with h.factory() as db:
+        retrieval = service(db, "engineer")
+        index = IndexService(db, h.storage, h.settings)
+        revision = index.prepare(
+            h.versions["runbook"],
+            ChunkConfig(max_characters=64, overlap_characters=8),
+            embedding_profile(FakeEmbeddingProvider().model),
+        )
+        index.embed(revision.id, FakeEmbeddingProvider())
+        index.activate(revision.id)
+        rows = retrieval.lexical(
+            SearchRequest(query="datos", document_id=corpus_document_id("runbook"))
+        ).candidates
+        assert rows
+        config = ContextConfig(neighbor_radius=1, max_per_document=3)
+        context = ContextBuilder(db, retrieval.actor, config).build(
+            "¿Qué dice el runbook?", rows[:1]
+        )
+        assert 1 < len(context.source_ids) <= 3
+        sources = CitationService(db, retrieval.actor).sources(context.source_ids)
+        assert all(source.index_revision_id == revision.id for source in sources.values())
+        assert context == ContextBuilder(db, retrieval.actor, config).build(
+            "¿Qué dice el runbook?", rows[:1]
+        )

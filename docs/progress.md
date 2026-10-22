@@ -10,7 +10,7 @@ fases; el calendario se ajusta al esfuerzo real y al cumplimiento de criterios d
 | 2 Biblioteca y cola           | PASS                     | PASS                     | PASS                     | PASS                                       |
 | 3 Pipeline documental         | PASS                     | PASS                     | PASS local; CI pendiente | PASS local; CI pendiente                   |
 | 4 Recuperación y citas        | PASS local; CI pendiente | PASS local; CI pendiente | PASS local; CI pendiente | FAKE/ACL PASS; REAL pendiente por decisión |
-| 5 RAG y chat                  | Pendiente                | Pendiente                | Pendiente                | Pendiente                                  |
+| 5 RAG y chat                  | PASS local; CI pendiente | Pendiente                | Pendiente                | REAL pendiente por decisión del usuario    |
 | 6 Administración y evaluación | Pendiente                | Pendiente                | Pendiente                | Pendiente                                  |
 | 7 Calidad y seguridad         | Pendiente                | Pendiente                | Pendiente                | Pendiente                                  |
 | 8 Despliegue y portafolio     | Pendiente                | Pendiente                | Pendiente                | Pendiente                                  |

@@ -59,7 +59,12 @@ class CitationService:
     def __init__(self, db: Session, actor: Actor) -> None:
         self.db, self.actor = db, actor
 
-    def sources(self, chunk_ids: Sequence[UUID]) -> dict[UUID, SourceView]:
+    def sources(
+        self,
+        chunk_ids: Sequence[UUID],
+        *,
+        active_only: bool = False,
+    ) -> dict[UUID, SourceView]:
         if not chunk_ids:
             return {}
         user = self.db.scalar(
@@ -68,7 +73,7 @@ class CitationService:
         if user is None:
             return {}
         actor = load_actor(self.db, user)
-        rows = self.db.execute(
+        query = (
             select(IndexChunk, IndexRevision, DocumentVersion, Document)
             .join(IndexRevision, IndexRevision.id == IndexChunk.index_revision_id)
             .join(DocumentVersion, DocumentVersion.id == IndexRevision.version_id)
@@ -81,6 +86,11 @@ class CitationService:
             )
             .execution_options(populate_existing=True)
         )
+        if active_only:
+            query = query.where(
+                Document.archived.is_(False), Document.active_index_revision_id == IndexRevision.id
+            )
+        rows = self.db.execute(query)
         result = {}
         for chunk, revision, version, document in rows:
             if hashlib.sha256(chunk.text.encode()).hexdigest() != chunk.sha256:
