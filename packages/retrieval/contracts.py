@@ -9,7 +9,7 @@ from packages.providers.contracts import Usage
 
 class SearchRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-    query: str = Field(min_length=1, max_length=1000)
+    query: str = Field(min_length=1, max_length=1000, pattern=r"^[^\x00]+$")
     method: Literal["lexical", "vector", "hybrid"] = "lexical"
     limit: int = Field(default=10, ge=1, le=50)
     department_id: UUID | None = None

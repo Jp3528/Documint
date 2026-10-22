@@ -1,9 +1,13 @@
 """Authorization precedes ranking/limits; vector distance sees only compatible profiles."""
 
 import math
+import re
+from uuid import UUID
 
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, String, cast, func, select
+from sqlalchemy.dialects.postgresql import TSQUERY
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.elements import ColumnElement
 from sqlalchemy.sql.selectable import CTE
 
 from packages.documents.access import document_access
@@ -21,8 +25,15 @@ from .fusion import DEFAULT_FUSION, FusionConfig, fuse
 
 
 class RetrievalService:
-    def __init__(self, db: Session, actor: Actor) -> None:
+    def __init__(
+        self,
+        db: Session,
+        actor: Actor,
+        *,
+        document_ids: frozenset[UUID] | None = None,
+    ) -> None:
         self.db, self.actor = db, actor
+        self.document_ids = document_ids
 
     def _refresh_actor(self) -> bool:
         user = self.db.scalar(
@@ -62,6 +73,8 @@ class RetrievalService:
         )
         if request.department_id:
             query = query.where(Document.department_id == request.department_id)
+        if self.document_ids is not None:
+            query = query.where(Document.id.in_(self.document_ids))
         if request.document_id:
             query = query.where(Document.id == request.document_id)
         if request.file_type:
@@ -98,7 +111,14 @@ class RetrievalService:
 
     def lexical(self, request: SearchRequest) -> RetrievalResult:
         scope = self._scope(request)
-        terms = func.websearch_to_tsquery("spanish", request.query)
+        terms: ColumnElement[str]
+        if re.search(r'"|(?<!\S)-\S|\bOR\b', request.query, flags=re.IGNORECASE):
+            terms = func.websearch_to_tsquery("spanish", request.query)
+        else:
+            # Turn PostgreSQL's safely quoted lexemes into an ANY-word query. Natural
+            # questions contain terms that need not all occur in the same source chunk.
+            plain = cast(func.plainto_tsquery("spanish", request.query), String)
+            terms = cast(func.replace(plain, " & ", " | "), TSQUERY)
         score = func.ts_rank_cd(scope.c.search_vector, terms, 32).label("score")
         query = (
             select(scope, score)
@@ -108,7 +128,7 @@ class RetrievalService:
         )
         return RetrievalResult(
             method="lexical",
-            strategy_version="spanish-fts-v1",
+            strategy_version="spanish-fts-v2",
             embedding_mode=None,
             candidates=self._candidates(query),
         )

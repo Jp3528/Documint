@@ -10,7 +10,10 @@ ni expresiones SQL del cliente. No se devuelve un conteo de documentos restringi
 ## FTS y vector
 
 Cada chunk tiene un `tsvector` generado en PostgreSQL con configuración `spanish`, más GIN.
-La estrategia `spanish-fts-v1` utiliza `websearch_to_tsquery` y `ts_rank_cd` normalizado.
+La estrategia actual `spanish-fts-v2` usa términos normalizados por PostgreSQL con OR para
+preguntas normales y conserva la sintaxis websearch cuando hay frases, OR o exclusiones
+explícitas. El ranking usa `ts_rank_cd` normalizado. Sustituye la consulta AND de v1 tras
+comparar el corpus completo en 4R; el baseline anterior se conserva en el reporte.
 Se documenta esta configuración porque el stemming/stopwords influye en relevancia; no es
 un detector multilingüe. Referencia: [PostgreSQL 17, búsqueda de texto](https://www.postgresql.org/docs/17/textsearch-controls.html).
 

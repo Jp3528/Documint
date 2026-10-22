@@ -1,0 +1,1465 @@
+{
+  "run_id": "5a1dd9ca-0205-4a36-9f0c-772d9e48b549",
+  "mode": "FAKE",
+  "status": "TECHNICAL_ONLY",
+  "created_at": "2026-10-22T18:47:10.896362Z",
+  "git_commit": "1942af9210154fe97053c14e94d02b8439d45112",
+  "git_dirty": true,
+  "implementation_sha256": "725bfcb47bb840c90b54e44302e6f2ad89c64d1ac857c29ac4484344ef0d523c",
+  "corpus_version": "1.1",
+  "dataset_version": "1.1",
+  "corpus_sha256": "665fc7107520bb8f74ce40d967d32e6deed55238cb846e52955627a487664236",
+  "dataset_sha256": "4555e878768715abc8641278a19b71ac87e5aa6319247a996b6d9e3f8a58cea4",
+  "model": {
+    "name": "fake-sha256",
+    "revision": "1",
+    "mode": "FAKE",
+    "dimensions": 16
+  },
+  "top_k": 5,
+  "fusion_configuration": {
+    "version": "weighted-rrf-v1",
+    "rank_constant": 60,
+    "lexical_weight": 1,
+    "vector_weight": 1,
+    "candidate_pool": 50,
+    "max_per_document": 3
+  },
+  "retrieval_versions": {
+    "lexical": "spanish-fts-v2",
+    "vector": "cosine-exact-v1",
+    "hybrid": "weighted-rrf-v1"
+  },
+  "active_revisions": {
+    "travel": "823cbe74-58d1-5ad0-996b-9ebac9cd5584",
+    "security": "d3b0dac4-58a6-5f4d-9b4a-841e21a9b3e1",
+    "runbook": "43112624-104e-50f1-adcc-72de73194088",
+    "benefits": "bd5be73a-1079-57c0-a4de-6c769366997d",
+    "finance": "717c4291-414a-5b6c-a3f5-de907131947a",
+    "incident": "0d003595-5a9a-5070-9913-99be9e2a76f4",
+    "onboarding": "a2036105-ef26-59d5-be2a-5eda534134ea",
+    "deploy": "8bb75757-aab7-5544-a2af-b6a863cf4fdd"
+  },
+  "index_configuration": {
+    "travel": {
+      "version_id": "ded8c87b-2e32-4072-9afa-b6bc01d83536",
+      "parser_revision": "pdf-v1:pypdf-6.20.1",
+      "normalized_sha256": "861b0e82b6732bcbeb0efab9748ab8a2f060d33c6070923e5ffa7b9df9a74bcf",
+      "chunk_config": {
+        "strategy": "section-characters-v1",
+        "max_chunks": 20000,
+        "max_characters": 1200,
+        "overlap_characters": 150
+      },
+      "chunk_count": 1
+    },
+    "security": {
+      "version_id": "21adca90-4105-4121-b114-aba8b341dcc1",
+      "parser_revision": "pdf-v1:pypdf-6.20.1",
+      "normalized_sha256": "737e9bfd56b99a3a493f29c10c3695d99b0fc645085557a255b39d688f9a8b6c",
+      "chunk_config": {
+        "strategy": "section-characters-v1",
+        "max_chunks": 20000,
+        "max_characters": 1200,
+        "overlap_characters": 150
+      },
+      "chunk_count": 1
+    },
+    "runbook": {
+      "version_id": "fceeabf2-9f61-4336-87ad-664e94959cdb",
+      "parser_revision": "docx-v1:python-docx-1.2.0",
+      "normalized_sha256": "de23dc9554753121207730627cd6566678b8c8c8cfb10ba3c22a6474169f3a01",
+      "chunk_config": {
+        "strategy": "section-characters-v1",
+        "max_chunks": 20000,
+        "max_characters": 1200,
+        "overlap_characters": 150
+      },
+      "chunk_count": 3
+    },
+    "benefits": {
+      "version_id": "9c1c9fd8-843d-4c44-bcfa-527f1e1beb55",
+      "parser_revision": "docx-v1:python-docx-1.2.0",
+      "normalized_sha256": "042168bf5e4742c281ea6653505c92557f89b582a770b3027a21a380e5df7865",
+      "chunk_config": {
+        "strategy": "section-characters-v1",
+        "max_chunks": 20000,
+        "max_characters": 1200,
+        "overlap_characters": 150
+      },
+      "chunk_count": 3
+    },
+    "finance": {
+      "version_id": "fcc47127-316e-4b55-bc0d-4a7895f0a574",
+      "parser_revision": "txt-utf8-v1",
+      "normalized_sha256": "7536ed9703d44b3293e4ed62296e8e70c382294adeb84183898c2440b6154948",
+      "chunk_config": {
+        "strategy": "section-characters-v1",
+        "max_chunks": 20000,
+        "max_characters": 1200,
+        "overlap_characters": 150
+      },
+      "chunk_count": 1
+    },
+    "incident": {
+      "version_id": "5551ed0d-259c-4283-a9f2-420b98798307",
+      "parser_revision": "txt-utf8-v1",
+      "normalized_sha256": "a7d5c5243270b4cf8ac045a0513b1c8652a20ca000d18f9f1f2470796a37ba3b",
+      "chunk_config": {
+        "strategy": "section-characters-v1",
+        "max_chunks": 20000,
+        "max_characters": 1200,
+        "overlap_characters": 150
+      },
+      "chunk_count": 1
+    },
+    "onboarding": {
+      "version_id": "dde6d01f-341d-40c6-90bb-b8913a9ca2f4",
+      "parser_revision": "md-v1:markdown-it-py-4.2.0",
+      "normalized_sha256": "7f9255ef70edd15ab865fff61e30f4de905a0075b823772f53c359612243faf5",
+      "chunk_config": {
+        "strategy": "section-characters-v1",
+        "max_chunks": 20000,
+        "max_characters": 1200,
+        "overlap_characters": 150
+      },
+      "chunk_count": 3
+    },
+    "deploy": {
+      "version_id": "48042044-02f2-4ed3-86d2-ca52dd6bc370",
+      "parser_revision": "md-v1:markdown-it-py-4.2.0",
+      "normalized_sha256": "63f8c46daa18f4a8774f83478fc5aeb205bd73b93ea90e5378686e1493c941d9",
+      "chunk_config": {
+        "strategy": "section-characters-v1",
+        "max_chunks": 20000,
+        "max_characters": 1200,
+        "overlap_characters": 150
+      },
+      "chunk_count": 3
+    }
+  },
+  "query_provider_calls": 21,
+  "query_successful_responses": 21,
+  "query_input_tokens": null,
+  "query_observed_cost_usd": "0",
+  "cost_scope": "Only observed query requests in this run; excludes prior indexing and lost responses.",
+  "summaries": {
+    "lexical": {
+      "answerable_cases": 12,
+      "mean_recall_at_k": 1.0,
+      "mrr": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "failed_cases": 0
+    },
+    "vector": {
+      "answerable_cases": 12,
+      "mean_recall_at_k": 0.7083333333333334,
+      "mrr": 0.6944444444444445,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "failed_cases": 0
+    },
+    "hybrid": {
+      "answerable_cases": 12,
+      "mean_recall_at_k": 1.0,
+      "mrr": 0.9444444444444445,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "failed_cases": 0
+    }
+  },
+  "cases": [
+    {
+      "case_id": "q01",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "lexical",
+      "retrieved_sources": ["travel", "onboarding"],
+      "chunk_ids": ["622025b9-60ba-5043-9832-1b38882fc551", "b45a1bc4-db3e-514e-a6ac-085ff113346f"],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 16.59,
+      "error_code": null
+    },
+    {
+      "case_id": "q01",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "vector",
+      "retrieved_sources": ["deploy", "travel", "deploy", "security", "runbook"],
+      "chunk_ids": [
+        "ff8a57da-9546-56eb-bda1-106eabfbb6c6",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "15094c73-8e85-5be8-ad79-0f58ccaaab66",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "705c36d5-fbdb-5475-8621-aa47b7d78dcb"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.5,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 21.271,
+      "error_code": null
+    },
+    {
+      "case_id": "q01",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "hybrid",
+      "retrieved_sources": ["travel", "onboarding", "deploy", "deploy", "security"],
+      "chunk_ids": [
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "ff8a57da-9546-56eb-bda1-106eabfbb6c6",
+        "15094c73-8e85-5be8-ad79-0f58ccaaab66",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 30.448,
+      "error_code": null
+    },
+    {
+      "case_id": "q02",
+      "persona": "visitor",
+      "category": "answerable",
+      "method": "lexical",
+      "retrieved_sources": ["travel"],
+      "chunk_ids": ["622025b9-60ba-5043-9832-1b38882fc551"],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 4.167,
+      "error_code": null
+    },
+    {
+      "case_id": "q02",
+      "persona": "visitor",
+      "category": "answerable",
+      "method": "vector",
+      "retrieved_sources": ["travel", "onboarding", "security", "onboarding", "onboarding"],
+      "chunk_ids": [
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 15.021,
+      "error_code": null
+    },
+    {
+      "case_id": "q02",
+      "persona": "visitor",
+      "category": "answerable",
+      "method": "hybrid",
+      "retrieved_sources": ["travel", "onboarding", "security", "onboarding", "onboarding"],
+      "chunk_ids": [
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 25.19,
+      "error_code": null
+    },
+    {
+      "case_id": "q03",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "lexical",
+      "retrieved_sources": ["security"],
+      "chunk_ids": ["ccf63556-a0ae-5d94-be73-fe4f3df7e223"],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.962,
+      "error_code": null
+    },
+    {
+      "case_id": "q03",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "vector",
+      "retrieved_sources": ["onboarding", "deploy", "runbook", "travel", "onboarding"],
+      "chunk_ids": [
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "15094c73-8e85-5be8-ad79-0f58ccaaab66",
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7"
+      ],
+      "recall_at_k": 0.0,
+      "reciprocal_rank": 0.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 13.632,
+      "error_code": null
+    },
+    {
+      "case_id": "q03",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "hybrid",
+      "retrieved_sources": ["security", "onboarding", "deploy", "runbook", "travel"],
+      "chunk_ids": [
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "15094c73-8e85-5be8-ad79-0f58ccaaab66",
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "622025b9-60ba-5043-9832-1b38882fc551"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 24.033,
+      "error_code": null
+    },
+    {
+      "case_id": "q04",
+      "persona": "hr",
+      "category": "answerable",
+      "method": "lexical",
+      "retrieved_sources": ["benefits", "benefits", "benefits", "onboarding", "travel"],
+      "chunk_ids": [
+        "71be5e6d-dd73-5e7d-a5d3-be2a7baea6e2",
+        "7946db94-aef7-5c25-8815-f8076469418d",
+        "80976144-a985-5647-811f-405cef069106",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "622025b9-60ba-5043-9832-1b38882fc551"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 5.775,
+      "error_code": null
+    },
+    {
+      "case_id": "q04",
+      "persona": "hr",
+      "category": "answerable",
+      "method": "vector",
+      "retrieved_sources": ["onboarding", "travel", "security", "onboarding", "onboarding"],
+      "chunk_ids": [
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "087b6201-528b-5259-9c91-acb549714f06"
+      ],
+      "recall_at_k": 0.0,
+      "reciprocal_rank": 0.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 12.768,
+      "error_code": null
+    },
+    {
+      "case_id": "q04",
+      "persona": "hr",
+      "category": "answerable",
+      "method": "hybrid",
+      "retrieved_sources": ["onboarding", "travel", "benefits", "benefits", "benefits"],
+      "chunk_ids": [
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "71be5e6d-dd73-5e7d-a5d3-be2a7baea6e2",
+        "7946db94-aef7-5c25-8815-f8076469418d",
+        "80976144-a985-5647-811f-405cef069106"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.3333333333333333,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 58.438,
+      "error_code": null
+    },
+    {
+      "case_id": "q05",
+      "persona": "km_eng",
+      "category": "answerable",
+      "method": "lexical",
+      "retrieved_sources": ["runbook", "runbook"],
+      "chunk_ids": ["9550a18e-9a75-5094-ba03-6b1eedd8ba0b", "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2"],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.652,
+      "error_code": null
+    },
+    {
+      "case_id": "q05",
+      "persona": "km_eng",
+      "category": "answerable",
+      "method": "vector",
+      "retrieved_sources": ["runbook", "runbook", "runbook", "travel", "onboarding"],
+      "chunk_ids": [
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "9550a18e-9a75-5094-ba03-6b1eedd8ba0b",
+        "705c36d5-fbdb-5475-8621-aa47b7d78dcb",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 12.484,
+      "error_code": null
+    },
+    {
+      "case_id": "q05",
+      "persona": "km_eng",
+      "category": "answerable",
+      "method": "hybrid",
+      "retrieved_sources": ["runbook", "runbook", "runbook", "travel", "onboarding"],
+      "chunk_ids": [
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "9550a18e-9a75-5094-ba03-6b1eedd8ba0b",
+        "705c36d5-fbdb-5475-8621-aa47b7d78dcb",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 23.281,
+      "error_code": null
+    },
+    {
+      "case_id": "q06",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "lexical",
+      "retrieved_sources": ["deploy", "runbook", "deploy"],
+      "chunk_ids": [
+        "9288769d-fe0f-5882-8fff-edee41b59bac",
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "ff8a57da-9546-56eb-bda1-106eabfbb6c6"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 4.135,
+      "error_code": null
+    },
+    {
+      "case_id": "q06",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "vector",
+      "retrieved_sources": ["deploy", "security", "runbook", "runbook", "onboarding"],
+      "chunk_ids": [
+        "9288769d-fe0f-5882-8fff-edee41b59bac",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "9550a18e-9a75-5094-ba03-6b1eedd8ba0b",
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "087b6201-528b-5259-9c91-acb549714f06"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 12.561,
+      "error_code": null
+    },
+    {
+      "case_id": "q06",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "hybrid",
+      "retrieved_sources": ["deploy", "runbook", "deploy", "security", "runbook"],
+      "chunk_ids": [
+        "9288769d-fe0f-5882-8fff-edee41b59bac",
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "ff8a57da-9546-56eb-bda1-106eabfbb6c6",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "9550a18e-9a75-5094-ba03-6b1eedd8ba0b"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 23.618,
+      "error_code": null
+    },
+    {
+      "case_id": "q07",
+      "persona": "finance",
+      "category": "answerable",
+      "method": "lexical",
+      "retrieved_sources": ["finance", "travel"],
+      "chunk_ids": ["e25f83df-ec81-584b-8c04-7e50545d32f8", "622025b9-60ba-5043-9832-1b38882fc551"],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.93,
+      "error_code": null
+    },
+    {
+      "case_id": "q07",
+      "persona": "finance",
+      "category": "answerable",
+      "method": "vector",
+      "retrieved_sources": ["onboarding", "onboarding", "finance", "travel", "onboarding"],
+      "chunk_ids": [
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "e25f83df-ec81-584b-8c04-7e50545d32f8",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.3333333333333333,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 14.043,
+      "error_code": null
+    },
+    {
+      "case_id": "q07",
+      "persona": "finance",
+      "category": "answerable",
+      "method": "hybrid",
+      "retrieved_sources": ["finance", "travel", "onboarding", "onboarding", "onboarding"],
+      "chunk_ids": [
+        "e25f83df-ec81-584b-8c04-7e50545d32f8",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 22.115,
+      "error_code": null
+    },
+    {
+      "case_id": "q08",
+      "persona": "auditor_granted",
+      "category": "answerable",
+      "method": "lexical",
+      "retrieved_sources": ["incident"],
+      "chunk_ids": ["37a11fdd-fcd2-59ef-a4e4-38e29958cf25"],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 7.029,
+      "error_code": null
+    },
+    {
+      "case_id": "q08",
+      "persona": "auditor_granted",
+      "category": "answerable",
+      "method": "vector",
+      "retrieved_sources": ["incident"],
+      "chunk_ids": ["37a11fdd-fcd2-59ef-a4e4-38e29958cf25"],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 20.602,
+      "error_code": null
+    },
+    {
+      "case_id": "q08",
+      "persona": "auditor_granted",
+      "category": "answerable",
+      "method": "hybrid",
+      "retrieved_sources": ["incident"],
+      "chunk_ids": ["37a11fdd-fcd2-59ef-a4e4-38e29958cf25"],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 26.454,
+      "error_code": null
+    },
+    {
+      "case_id": "q09",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "lexical",
+      "retrieved_sources": ["security", "onboarding", "onboarding", "onboarding"],
+      "chunk_ids": [
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 4.31,
+      "error_code": null
+    },
+    {
+      "case_id": "q09",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "vector",
+      "retrieved_sources": ["onboarding", "runbook", "deploy", "deploy", "onboarding"],
+      "chunk_ids": [
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "15094c73-8e85-5be8-ad79-0f58ccaaab66",
+        "9288769d-fe0f-5882-8fff-edee41b59bac",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7"
+      ],
+      "recall_at_k": 0.5,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 10.778,
+      "error_code": null
+    },
+    {
+      "case_id": "q09",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "hybrid",
+      "retrieved_sources": ["onboarding", "onboarding", "security", "onboarding", "runbook"],
+      "chunk_ids": [
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 20.683,
+      "error_code": null
+    },
+    {
+      "case_id": "q10",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "lexical",
+      "retrieved_sources": ["deploy", "runbook", "runbook", "deploy", "runbook"],
+      "chunk_ids": [
+        "15094c73-8e85-5be8-ad79-0f58ccaaab66",
+        "705c36d5-fbdb-5475-8621-aa47b7d78dcb",
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "9288769d-fe0f-5882-8fff-edee41b59bac",
+        "9550a18e-9a75-5094-ba03-6b1eedd8ba0b"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.355,
+      "error_code": null
+    },
+    {
+      "case_id": "q10",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "vector",
+      "retrieved_sources": ["deploy", "onboarding", "travel", "deploy", "onboarding"],
+      "chunk_ids": [
+        "15094c73-8e85-5be8-ad79-0f58ccaaab66",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "9288769d-fe0f-5882-8fff-edee41b59bac",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f"
+      ],
+      "recall_at_k": 0.5,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 10.236,
+      "error_code": null
+    },
+    {
+      "case_id": "q10",
+      "persona": "engineer",
+      "category": "answerable",
+      "method": "hybrid",
+      "retrieved_sources": ["deploy", "deploy", "runbook", "runbook", "runbook"],
+      "chunk_ids": [
+        "15094c73-8e85-5be8-ad79-0f58ccaaab66",
+        "9288769d-fe0f-5882-8fff-edee41b59bac",
+        "705c36d5-fbdb-5475-8621-aa47b7d78dcb",
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "9550a18e-9a75-5094-ba03-6b1eedd8ba0b"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 20.836,
+      "error_code": null
+    },
+    {
+      "case_id": "q11",
+      "persona": "hr",
+      "category": "answerable",
+      "method": "lexical",
+      "retrieved_sources": ["travel", "benefits", "benefits", "benefits", "onboarding"],
+      "chunk_ids": [
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "71be5e6d-dd73-5e7d-a5d3-be2a7baea6e2",
+        "7946db94-aef7-5c25-8815-f8076469418d",
+        "80976144-a985-5647-811f-405cef069106",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.31,
+      "error_code": null
+    },
+    {
+      "case_id": "q11",
+      "persona": "hr",
+      "category": "answerable",
+      "method": "vector",
+      "retrieved_sources": ["onboarding", "travel", "onboarding", "benefits", "benefits"],
+      "chunk_ids": [
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "71be5e6d-dd73-5e7d-a5d3-be2a7baea6e2",
+        "7946db94-aef7-5c25-8815-f8076469418d"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.5,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 10.376,
+      "error_code": null
+    },
+    {
+      "case_id": "q11",
+      "persona": "hr",
+      "category": "answerable",
+      "method": "hybrid",
+      "retrieved_sources": ["travel", "onboarding", "benefits", "benefits", "benefits"],
+      "chunk_ids": [
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "71be5e6d-dd73-5e7d-a5d3-be2a7baea6e2",
+        "7946db94-aef7-5c25-8815-f8076469418d",
+        "80976144-a985-5647-811f-405cef069106"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 20.506,
+      "error_code": null
+    },
+    {
+      "case_id": "q12",
+      "persona": "finance",
+      "category": "answerable",
+      "method": "lexical",
+      "retrieved_sources": ["finance", "travel"],
+      "chunk_ids": ["e25f83df-ec81-584b-8c04-7e50545d32f8", "622025b9-60ba-5043-9832-1b38882fc551"],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.169,
+      "error_code": null
+    },
+    {
+      "case_id": "q12",
+      "persona": "finance",
+      "category": "answerable",
+      "method": "vector",
+      "retrieved_sources": ["travel", "onboarding", "onboarding", "onboarding", "security"],
+      "chunk_ids": [
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223"
+      ],
+      "recall_at_k": 0.5,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 11.866,
+      "error_code": null
+    },
+    {
+      "case_id": "q12",
+      "persona": "finance",
+      "category": "answerable",
+      "method": "hybrid",
+      "retrieved_sources": ["travel", "finance", "onboarding", "onboarding", "onboarding"],
+      "chunk_ids": [
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "e25f83df-ec81-584b-8c04-7e50545d32f8",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "087b6201-528b-5259-9c91-acb549714f06"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 20.039,
+      "error_code": null
+    },
+    {
+      "case_id": "q13",
+      "persona": "visitor",
+      "category": "no_evidence",
+      "method": "lexical",
+      "retrieved_sources": ["security", "onboarding", "travel"],
+      "chunk_ids": [
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "622025b9-60ba-5043-9832-1b38882fc551"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 4.009,
+      "error_code": null
+    },
+    {
+      "case_id": "q13",
+      "persona": "visitor",
+      "category": "no_evidence",
+      "method": "vector",
+      "retrieved_sources": ["security", "onboarding", "travel", "onboarding", "onboarding"],
+      "chunk_ids": [
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "087b6201-528b-5259-9c91-acb549714f06"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 12.087,
+      "error_code": null
+    },
+    {
+      "case_id": "q13",
+      "persona": "visitor",
+      "category": "no_evidence",
+      "method": "hybrid",
+      "retrieved_sources": ["security", "travel", "onboarding", "onboarding", "onboarding"],
+      "chunk_ids": [
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 22.345,
+      "error_code": null
+    },
+    {
+      "case_id": "q14",
+      "persona": "engineer",
+      "category": "no_evidence",
+      "method": "lexical",
+      "retrieved_sources": ["travel"],
+      "chunk_ids": ["622025b9-60ba-5043-9832-1b38882fc551"],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.027,
+      "error_code": null
+    },
+    {
+      "case_id": "q14",
+      "persona": "engineer",
+      "category": "no_evidence",
+      "method": "vector",
+      "retrieved_sources": ["onboarding", "runbook", "travel", "runbook", "deploy"],
+      "chunk_ids": [
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "705c36d5-fbdb-5475-8621-aa47b7d78dcb",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "15094c73-8e85-5be8-ad79-0f58ccaaab66"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 10.429,
+      "error_code": null
+    },
+    {
+      "case_id": "q14",
+      "persona": "engineer",
+      "category": "no_evidence",
+      "method": "hybrid",
+      "retrieved_sources": ["travel", "onboarding", "runbook", "runbook", "deploy"],
+      "chunk_ids": [
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "705c36d5-fbdb-5475-8621-aa47b7d78dcb",
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "15094c73-8e85-5be8-ad79-0f58ccaaab66"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 19.4,
+      "error_code": null
+    },
+    {
+      "case_id": "q15",
+      "persona": "finance",
+      "category": "no_evidence",
+      "method": "lexical",
+      "retrieved_sources": ["finance", "travel"],
+      "chunk_ids": ["e25f83df-ec81-584b-8c04-7e50545d32f8", "622025b9-60ba-5043-9832-1b38882fc551"],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.421,
+      "error_code": null
+    },
+    {
+      "case_id": "q15",
+      "persona": "finance",
+      "category": "no_evidence",
+      "method": "vector",
+      "retrieved_sources": ["onboarding", "travel", "finance", "onboarding", "onboarding"],
+      "chunk_ids": [
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "e25f83df-ec81-584b-8c04-7e50545d32f8",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "087b6201-528b-5259-9c91-acb549714f06"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 10.374,
+      "error_code": null
+    },
+    {
+      "case_id": "q15",
+      "persona": "finance",
+      "category": "no_evidence",
+      "method": "hybrid",
+      "retrieved_sources": ["finance", "travel", "onboarding", "onboarding", "onboarding"],
+      "chunk_ids": [
+        "e25f83df-ec81-584b-8c04-7e50545d32f8",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "087b6201-528b-5259-9c91-acb549714f06"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 20.087,
+      "error_code": null
+    },
+    {
+      "case_id": "q16",
+      "persona": "visitor",
+      "category": "no_evidence",
+      "method": "lexical",
+      "retrieved_sources": [],
+      "chunk_ids": [],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.686,
+      "error_code": null
+    },
+    {
+      "case_id": "q16",
+      "persona": "visitor",
+      "category": "no_evidence",
+      "method": "vector",
+      "retrieved_sources": ["onboarding", "onboarding", "travel", "security", "onboarding"],
+      "chunk_ids": [
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 12.451,
+      "error_code": null
+    },
+    {
+      "case_id": "q16",
+      "persona": "visitor",
+      "category": "no_evidence",
+      "method": "hybrid",
+      "retrieved_sources": ["onboarding", "onboarding", "travel", "security", "onboarding"],
+      "chunk_ids": [
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 26.858,
+      "error_code": null
+    },
+    {
+      "case_id": "q17",
+      "persona": "hr",
+      "category": "no_evidence",
+      "method": "lexical",
+      "retrieved_sources": [],
+      "chunk_ids": [],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 4.317,
+      "error_code": null
+    },
+    {
+      "case_id": "q17",
+      "persona": "hr",
+      "category": "no_evidence",
+      "method": "vector",
+      "retrieved_sources": ["travel", "benefits", "security", "onboarding", "benefits"],
+      "chunk_ids": [
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "71be5e6d-dd73-5e7d-a5d3-be2a7baea6e2",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "7946db94-aef7-5c25-8815-f8076469418d"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 11.516,
+      "error_code": null
+    },
+    {
+      "case_id": "q17",
+      "persona": "hr",
+      "category": "no_evidence",
+      "method": "hybrid",
+      "retrieved_sources": ["travel", "benefits", "security", "onboarding", "benefits"],
+      "chunk_ids": [
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "71be5e6d-dd73-5e7d-a5d3-be2a7baea6e2",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "7946db94-aef7-5c25-8815-f8076469418d"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 22.36,
+      "error_code": null
+    },
+    {
+      "case_id": "q18",
+      "persona": "visitor",
+      "category": "no_evidence",
+      "method": "lexical",
+      "retrieved_sources": ["travel"],
+      "chunk_ids": ["622025b9-60ba-5043-9832-1b38882fc551"],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.732,
+      "error_code": null
+    },
+    {
+      "case_id": "q18",
+      "persona": "visitor",
+      "category": "no_evidence",
+      "method": "vector",
+      "retrieved_sources": ["travel", "onboarding", "onboarding", "onboarding", "security"],
+      "chunk_ids": [
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 12.07,
+      "error_code": null
+    },
+    {
+      "case_id": "q18",
+      "persona": "visitor",
+      "category": "no_evidence",
+      "method": "hybrid",
+      "retrieved_sources": ["travel", "onboarding", "onboarding", "onboarding", "security"],
+      "chunk_ids": [
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 22.047,
+      "error_code": null
+    },
+    {
+      "case_id": "q19",
+      "persona": "engineer",
+      "category": "restricted",
+      "method": "lexical",
+      "retrieved_sources": ["travel", "runbook"],
+      "chunk_ids": ["622025b9-60ba-5043-9832-1b38882fc551", "705c36d5-fbdb-5475-8621-aa47b7d78dcb"],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.37,
+      "error_code": null
+    },
+    {
+      "case_id": "q19",
+      "persona": "engineer",
+      "category": "restricted",
+      "method": "vector",
+      "retrieved_sources": ["runbook", "runbook", "deploy", "runbook", "deploy"],
+      "chunk_ids": [
+        "9550a18e-9a75-5094-ba03-6b1eedd8ba0b",
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "ff8a57da-9546-56eb-bda1-106eabfbb6c6",
+        "705c36d5-fbdb-5475-8621-aa47b7d78dcb",
+        "9288769d-fe0f-5882-8fff-edee41b59bac"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 10.63,
+      "error_code": null
+    },
+    {
+      "case_id": "q19",
+      "persona": "engineer",
+      "category": "restricted",
+      "method": "hybrid",
+      "retrieved_sources": ["runbook", "travel", "runbook", "runbook", "deploy"],
+      "chunk_ids": [
+        "705c36d5-fbdb-5475-8621-aa47b7d78dcb",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "9550a18e-9a75-5094-ba03-6b1eedd8ba0b",
+        "828e6a94-3fdf-5748-8c8e-f1cc0990c2e2",
+        "ff8a57da-9546-56eb-bda1-106eabfbb6c6"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 20.582,
+      "error_code": null
+    },
+    {
+      "case_id": "q20",
+      "persona": "hr",
+      "category": "restricted",
+      "method": "lexical",
+      "retrieved_sources": ["security"],
+      "chunk_ids": ["ccf63556-a0ae-5d94-be73-fe4f3df7e223"],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 2.927,
+      "error_code": null
+    },
+    {
+      "case_id": "q20",
+      "persona": "hr",
+      "category": "restricted",
+      "method": "vector",
+      "retrieved_sources": ["onboarding", "benefits", "onboarding", "travel", "onboarding"],
+      "chunk_ids": [
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "71be5e6d-dd73-5e7d-a5d3-be2a7baea6e2",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "087b6201-528b-5259-9c91-acb549714f06"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 10.556,
+      "error_code": null
+    },
+    {
+      "case_id": "q20",
+      "persona": "hr",
+      "category": "restricted",
+      "method": "hybrid",
+      "retrieved_sources": ["security", "onboarding", "benefits", "onboarding", "travel"],
+      "chunk_ids": [
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "71be5e6d-dd73-5e7d-a5d3-be2a7baea6e2",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "622025b9-60ba-5043-9832-1b38882fc551"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 20.174,
+      "error_code": null
+    },
+    {
+      "case_id": "q21",
+      "persona": "visitor",
+      "category": "restricted",
+      "method": "lexical",
+      "retrieved_sources": [],
+      "chunk_ids": [],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.537,
+      "error_code": null
+    },
+    {
+      "case_id": "q21",
+      "persona": "visitor",
+      "category": "restricted",
+      "method": "vector",
+      "retrieved_sources": ["onboarding", "security", "onboarding", "travel", "onboarding"],
+      "chunk_ids": [
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 12.143,
+      "error_code": null
+    },
+    {
+      "case_id": "q21",
+      "persona": "visitor",
+      "category": "restricted",
+      "method": "hybrid",
+      "retrieved_sources": ["onboarding", "security", "onboarding", "travel", "onboarding"],
+      "chunk_ids": [
+        "087b6201-528b-5259-9c91-acb549714f06",
+        "ccf63556-a0ae-5d94-be73-fe4f3df7e223",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 22.968,
+      "error_code": null
+    },
+    {
+      "case_id": "q22",
+      "persona": "engineer",
+      "category": "restricted",
+      "method": "lexical",
+      "retrieved_sources": ["onboarding"],
+      "chunk_ids": ["b45a1bc4-db3e-514e-a6ac-085ff113346f"],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.376,
+      "error_code": null
+    },
+    {
+      "case_id": "q22",
+      "persona": "engineer",
+      "category": "restricted",
+      "method": "vector",
+      "retrieved_sources": ["onboarding", "travel", "runbook", "onboarding", "deploy"],
+      "chunk_ids": [
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "705c36d5-fbdb-5475-8621-aa47b7d78dcb",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "15094c73-8e85-5be8-ad79-0f58ccaaab66"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 11.204,
+      "error_code": null
+    },
+    {
+      "case_id": "q22",
+      "persona": "engineer",
+      "category": "restricted",
+      "method": "hybrid",
+      "retrieved_sources": ["onboarding", "travel", "runbook", "onboarding", "deploy"],
+      "chunk_ids": [
+        "b45a1bc4-db3e-514e-a6ac-085ff113346f",
+        "622025b9-60ba-5043-9832-1b38882fc551",
+        "705c36d5-fbdb-5475-8621-aa47b7d78dcb",
+        "25e0c4dd-ef60-5e92-9a7b-4b5a4b04c8b7",
+        "15094c73-8e85-5be8-ad79-0f58ccaaab66"
+      ],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 20.725,
+      "error_code": null
+    },
+    {
+      "case_id": "q23",
+      "persona": "auditor",
+      "category": "restricted",
+      "method": "lexical",
+      "retrieved_sources": [],
+      "chunk_ids": [],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.554,
+      "error_code": null
+    },
+    {
+      "case_id": "q23",
+      "persona": "auditor",
+      "category": "restricted",
+      "method": "vector",
+      "retrieved_sources": [],
+      "chunk_ids": [],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.799,
+      "error_code": null
+    },
+    {
+      "case_id": "q23",
+      "persona": "auditor",
+      "category": "restricted",
+      "method": "hybrid",
+      "retrieved_sources": [],
+      "chunk_ids": [],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 9.935,
+      "error_code": null
+    },
+    {
+      "case_id": "q24",
+      "persona": "inactive",
+      "category": "restricted",
+      "method": "lexical",
+      "retrieved_sources": [],
+      "chunk_ids": [],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 5.179,
+      "error_code": null
+    },
+    {
+      "case_id": "q24",
+      "persona": "inactive",
+      "category": "restricted",
+      "method": "vector",
+      "retrieved_sources": [],
+      "chunk_ids": [],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 3.515,
+      "error_code": null
+    },
+    {
+      "case_id": "q24",
+      "persona": "inactive",
+      "category": "restricted",
+      "method": "hybrid",
+      "retrieved_sources": [],
+      "chunk_ids": [],
+      "recall_at_k": null,
+      "reciprocal_rank": null,
+      "unauthorized_hits": 0,
+      "forbidden_hits": 0,
+      "elapsed_ms": 8.655,
+      "error_code": null
+    }
+  ]
+}

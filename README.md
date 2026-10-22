@@ -16,6 +16,7 @@ Plataforma de conocimiento documental en desarrollo, orientada a gestionar fuent
 - Biblioteca con permisos, versiones inmutables y originales en almacenamiento S3 privado.
 - Carga validada de PDF, DOCX, TXT y Markdown.
 - Pipeline con Redis/Celery, parsers con procedencia, fragmentación e índices pgvector versionados.
+- Búsqueda por palabras, vectorial e híbrida, con citas y fuentes históricas reautorizadas.
 - Corpus sintético, proveedores fake deterministas y evidencia de avance por sesión.
 
 ### Tecnologías
@@ -90,7 +91,7 @@ El check reúne lint, formato, tipos, pruebas y build. Las pruebas con infraestr
 
 ### Alcance
 
-El [seguimiento actual](docs/progress.md) sitúa el proyecto en la fase 3: el pipeline conecta extracción, fragmentación, embeddings y activación atómica. Recuperación, citas y chat RAG corresponden a fases posteriores. READY exige un índice completo; el modo local FAKE no acredita calidad semántica. El [adaptador real y su configuración](docs/adr/0011-embedding-pipeline.md) están separados de las evaluaciones reales pendientes en 4R. No incluye OCR ni conectores externos. Los nombres internos `DOCUMIND_*` se conservan por compatibilidad; el producto se llama Documint.
+El [seguimiento actual](docs/progress.md) sitúa el proyecto en la fase 4: pipeline completo, búsqueda autorizada y fuentes navegables. El chat RAG corresponde a la fase 5. READY exige un índice completo; el modo local FAKE no acredita calidad semántica. Los adaptadores y herramientas de evaluación están disponibles; las evaluaciones reales de 4R/5R quedan pendientes por decisión del usuario. No incluye OCR ni conectores externos. Los nombres internos `DOCUMIND_*` se conservan por compatibilidad; el producto se llama Documint.
 
 ### Documentación
 
@@ -117,6 +118,7 @@ A document knowledge platform under development, designed to manage permission-c
 - A permission-controlled library with immutable versions and originals in private S3 storage.
 - Validated PDF, DOCX, TXT and Markdown uploads.
 - Redis/Celery pipeline, provenance-aware parsers, chunking and versioned pgvector indexes.
+- Keyword, vector and hybrid search, with citations and reauthorized historical sources.
 - Synthetic corpus, deterministic fake providers and session-by-session progress evidence.
 
 ### Technology
@@ -191,7 +193,7 @@ The check combines lint, formatting, types, tests and build. Real infrastructure
 
 ### Scope
 
-The [current progress log](docs/progress.md) places the project in phase 3: extraction, chunking, embeddings and atomic activation now form a complete pipeline. Retrieval, citations and RAG chat belong to later phases. READY requires a complete physical index; local FAKE mode does not establish semantic quality. The [real adapter and its configuration](docs/adr/0011-embedding-pipeline.md) are separate from the real evaluations pending in 4R. OCR and external connectors are outside scope. Internal `DOCUMIND_*` names are retained for compatibility; the product is named Documint.
+The [current progress log](docs/progress.md) places the project in phase 4: a complete pipeline, permission-filtered search and navigable sources. RAG chat belongs to phase 5. READY requires a complete physical index; local FAKE mode does not establish semantic quality. Adapters and evaluation tools are available; real evaluations in 4R/5R remain pending at the user's request. OCR and external connectors are outside scope. Internal `DOCUMIND_*` names are retained for compatibility; the product is named Documint.
 
 ### Documentation
 

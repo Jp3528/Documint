@@ -30,3 +30,16 @@ El flag opcional `--process` completa el pipeline con el proveedor configurado. 
 El importador reutiliza sus IDs/versiones y detecta conflictos de metadata o grants; no corrige
 ediciones del operador. Sincroniza roles/membresías de identidades demo y conserva contraseñas
 y estados existentes. Nunca ejecutar estos seeds sobre datos de producción.
+
+La comparación de retrieval se ejecuta por separado:
+
+```bash
+uv run python -m scripts.evaluate_retrieval --mode FAKE --top-k 5
+```
+
+El reporte en `evals/reports/retrieval_fake.json` identifica modo y alcance técnico. `--mode REAL`
+rechaza el proveedor fake y exige las ocho revisiones activas con el perfil real configurado.
+No prepara índices ni cambia de proveedor automáticamente. Los errores se conservan por caso;
+el CLI devuelve fallo si hay errores de proveedor o evidencia no autorizada. Consulta
+[4R](../docs/sessions/4R.md) para definiciones de métricas, configuración y límites de costos.
+Los JSON generados pueden formatearse con `npm run format` antes de incluirlos en un commit.

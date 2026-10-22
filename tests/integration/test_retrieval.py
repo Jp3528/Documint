@@ -11,7 +11,8 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from apps.api.dependencies import get_session
 from apps.api.main import create_app
-from evals.schema import reference_can_read
+from evals.retrieval import EvaluationError, evaluate_retrieval
+from evals.schema import GoldenDataset, reference_can_read
 from packages.config import Settings
 from packages.documents.models import Document, DocumentGrant, DocumentVersion
 from packages.documents.service import DocumentService
@@ -30,7 +31,7 @@ from packages.retrieval.contracts import SearchRequest
 from packages.retrieval.fusion import FusionConfig
 from packages.retrieval.service import RetrievalService
 from packages.storage import S3Storage
-from scripts.seed_corpus import corpus_document_id, demo_manifest, identity_id, seed_corpus
+from scripts.seed_corpus import ROOT, corpus_document_id, demo_manifest, identity_id, seed_corpus
 from scripts.seed_demo import PUBLIC_DEMO_PASSWORD, demo_personas
 
 pytestmark = pytest.mark.infrastructure
@@ -356,3 +357,54 @@ def test_citations_reconstruct_real_locators_and_preserve_historical_sources(
         db.commit()
         with pytest.raises(NotFoundError):
             restricted.source(candidate.chunk_id)
+
+
+def test_evaluation_is_explicitly_fake_and_rejects_fake_as_real(indexed: SearchHarness) -> None:
+    h = indexed
+    golden = GoldenDataset.model_validate_json((ROOT / "evals/golden.json").read_text("utf-8"))
+    with h.factory() as db:
+        with pytest.raises(EvaluationError, match="mode must match"):
+            evaluate_retrieval(
+                db, FakeEmbeddingProvider(), "REAL", demo_manifest(), demo_personas(), golden
+            )
+        report = evaluate_retrieval(
+            db, FakeEmbeddingProvider(), "FAKE", demo_manifest(), demo_personas(), golden
+        )
+        assert report.mode == "FAKE" and report.status == "TECHNICAL_ONLY"
+        assert len(report.cases) == 72 and len(report.summaries) == 3
+        assert report.query_observed_cost_usd == 0 and report.query_input_tokens is None
+        assert report.query_provider_calls <= 24
+        assert all(row.unauthorized_hits == row.forbidden_hits == 0 for row in report.cases)
+        assert all(row.recall_at_k is None for row in report.cases if row.category != "answerable")
+
+        class UnavailableProvider(FakeEmbeddingProvider):
+            def embed(self, texts: Sequence[str]) -> EmbeddingBatch:
+                raise ProviderError("EMBEDDING_REQUEST_FAILED")
+
+        failed = evaluate_retrieval(
+            db, UnavailableProvider(), "FAKE", demo_manifest(), demo_personas(), golden
+        )
+        assert any(row.error_code == "EMBEDDING_REQUEST_FAILED" for row in failed.cases)
+        assert failed.query_successful_responses == 0 < failed.query_provider_calls
+        assert failed.query_observed_cost_usd is None
+
+
+def test_natural_questions_match_any_normalized_term_but_explicit_syntax_is_preserved(
+    indexed: SearchHarness,
+) -> None:
+    with indexed.factory() as db:
+        retrieval = service(db, "engineer")
+        document = corpus_document_id("travel")
+        natural = retrieval.lexical(
+            SearchRequest(
+                query="¿En cuántos días se presentan los gastos del viaje?", document_id=document
+            )
+        )
+        assert natural.candidates and natural.strategy_version == "spanish-fts-v2"
+        assert retrieval.lexical(
+            SearchRequest(query='"7 días naturales"', document_id=document)
+        ).candidates
+        assert not retrieval.lexical(
+            SearchRequest(query='"7 días naturales" -viajes', document_id=document)
+        ).candidates
+        assert not retrieval.lexical(SearchRequest(query="de la", document_id=document)).candidates
