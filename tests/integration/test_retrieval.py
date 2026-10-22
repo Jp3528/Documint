@@ -23,11 +23,14 @@ from packages.indexing.chunking import ChunkConfig
 from packages.indexing.service import IndexService
 from packages.processing.enqueue import ensure_job
 from packages.processing.service import process_job
-from packages.providers.contracts import EmbeddingBatch, ProviderError
+from packages.providers.contracts import EmbeddingBatch, LLMRequest, LLMResult, ProviderError
+from packages.providers.demo_llm import DemoLLMProvider
 from packages.providers.fake import FakeEmbeddingProvider
 from packages.providers.validation import embedding_profile
 from packages.rag.context import ContextBudgetError, ContextBuilder, ContextConfig
+from packages.rag.models import GenerationRun, GenerationSource
 from packages.rag.prompts import token_upper_bound
+from packages.rag.service import AnswerService
 from packages.retrieval.citations import CitationService
 from packages.retrieval.contracts import SearchRequest
 from packages.retrieval.fusion import FusionConfig
@@ -474,3 +477,75 @@ def test_context_neighbors_stay_inside_the_same_active_authorized_revision(
         assert context == ContextBuilder(db, retrieval.actor, config).build(
             "¿Qué dice el runbook?", rows[:1]
         )
+
+
+def test_answer_service_uses_real_sources_and_records_model_usage_and_all_context_sources(
+    indexed: SearchHarness,
+) -> None:
+    h = indexed
+    with h.factory() as db:
+        actor = service(db, "engineer").actor
+        llm = DemoLLMProvider()
+        answer = AnswerService(db, actor, h.settings, FakeEmbeddingProvider(), llm)
+        question = "¿En cuántos días se presentan los gastos del viaje?"
+        outcome = answer.answer(SearchRequest(query=question, method="hybrid", limit=8))
+        view = outcome.view
+        assert (
+            not view.abstained and view.model.mode == "FAKE" and view.citation_integrity == "PASS"
+        )
+        assert "7 días" in view.text and view.citations
+        assert all(c.document_id == corpus_document_id("travel") for c in view.citations)
+        run = db.get(GenerationRun, view.id)
+        assert run and run.status == "ANSWERED" and run.model_info["mode"] == "FAKE"
+        assert run.usage["llm"]["observed_cost_usd"] == "0"
+        assert "question" not in run.model_info and question not in str(run.retrieval_config)
+        sources = list(
+            db.scalars(select(GenerationSource).where(GenerationSource.run_id == view.id))
+        )
+        assert {source.chunk_id for source in sources} == set(outcome.used_source_ids)
+        assert {source.chunk_id for source in sources if source.cited} == {
+            c.chunk_id for c in view.citations
+        }
+        with patch.object(llm, "generate", wraps=llm.generate) as generate:
+            empty = answer.answer(SearchRequest(query="quasarxyznotincorpus", method="lexical"))
+            assert empty.view.abstained and not empty.view.citations
+            generate.assert_not_called()
+
+
+def test_answer_revalidates_sources_and_records_safe_external_failures(
+    indexed: SearchHarness,
+) -> None:
+    h = indexed
+    with h.factory() as db:
+        actor = service(db, "engineer").actor
+
+        class RevokingLLM(DemoLLMProvider):
+            def generate(self, request: LLMRequest) -> LLMResult:
+                result = super().generate(request)
+                document = db.get(Document, corpus_document_id("travel"))
+                assert document
+                document.visibility = "RESTRICTED"
+                db.commit()
+                return result
+
+        question = "¿En cuántos días se presentan los gastos del viaje?"
+        result = AnswerService(
+            db, actor, h.settings, FakeEmbeddingProvider(), RevokingLLM()
+        ).answer(SearchRequest(query=question))
+        assert (
+            result.view.abstained
+            and not result.view.citations
+            and result.view.citation_integrity == "FAIL"
+        )
+
+        class FailingLLM(DemoLLMProvider):
+            def generate(self, request: LLMRequest) -> LLMResult:
+                raise ProviderError("LLM_REQUEST_FAILED")
+
+        with pytest.raises(ProviderError, match="LLM_REQUEST_FAILED"):
+            AnswerService(db, actor, h.settings, FakeEmbeddingProvider(), FailingLLM()).answer(
+                SearchRequest(query="datos")
+            )
+        failed = db.scalar(select(GenerationRun).where(GenerationRun.status == "FAILED"))
+        assert failed and failed.error_code == "LLM_REQUEST_FAILED"
+        assert failed.usage["llm"]["observed_cost_usd"] is None

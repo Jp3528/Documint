@@ -5,3 +5,4 @@ from packages.identity.models import User  # noqa: F401
 from packages.indexing.models import IndexRevision  # noqa: F401
 from packages.parsers.models import Extraction  # noqa: F401
 from packages.processing.models import ProcessingJob  # noqa: F401
+from packages.rag.models import GenerationRun  # noqa: F401

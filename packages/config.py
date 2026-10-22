@@ -41,6 +41,14 @@ class Settings(BaseSettings):
     embedding_model: str = Field(default="text-embedding-3-small", min_length=1, max_length=128)
     embedding_revision: str = Field(default="deployment-1", min_length=1, max_length=128)
     embedding_dimensions: int = Field(default=1536, ge=1, le=4096)
+    llm_provider: Literal["fake", "openai"] = "fake"
+    llm_model: str = Field(default="", max_length=128)
+    llm_revision: str = Field(default="deployment-1", min_length=1, max_length=128)
+    llm_max_output_tokens: int = Field(default=1024, ge=128, le=4096)
+    context_token_budget: int = Field(default=6000, ge=2048, le=32000)
+    context_max_chunks: int = Field(default=8, ge=1, le=20)
+    context_max_per_document: int = Field(default=3, ge=1, le=10)
+    context_neighbor_radius: int = Field(default=0, ge=0, le=1)
 
     @model_validator(mode="after")
     def valid_chunk_overlap(self) -> "Settings":

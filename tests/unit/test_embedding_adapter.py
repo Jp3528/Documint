@@ -31,9 +31,7 @@ def payload() -> dict[str, object]:
 def test_real_adapter_wire_contract_order_usage_and_no_invented_cost() -> None:
     response = MagicMock()
     response.__enter__.return_value.read.return_value = json.dumps(payload()).encode()
-    with patch(
-        "packages.providers.openai_embeddings._opener.open", return_value=response
-    ) as request:
+    with patch("packages.providers.openai_http._opener.open", return_value=response) as request:
         result = adapter().embed(["first", "second"])
     sent = request.call_args.args[0]
     assert sent.full_url == "https://api.openai.com/v1/embeddings"
@@ -81,7 +79,7 @@ def test_input_limits_precede_external_requests(texts: list[str]) -> None:
 
 def test_request_errors_are_sanitized_and_not_retried() -> None:
     with patch(
-        "packages.providers.openai_embeddings._opener.open", side_effect=URLError("private")
+        "packages.providers.openai_http._opener.open", side_effect=URLError("private")
     ) as req:
         with pytest.raises(ProviderError, match=r"^EMBEDDING_REQUEST_FAILED$"):
             adapter().embed(["test"])

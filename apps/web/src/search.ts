@@ -26,6 +26,7 @@ const citationShape = {
   source_url: z.string(),
   original_url: z.string(),
 };
+export const citationSchema = z.object(citationShape);
 export const sourceSchema = z.object({ ...citationShape, text: z.string() });
 export type Source = z.infer<typeof sourceSchema>;
 export const searchSchema = z.object({

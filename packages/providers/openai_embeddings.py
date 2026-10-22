@@ -1,22 +1,12 @@
 """Explicit real adapter. No implicit fallback, automatic retries, pricing guesses or logs."""
 
-import json
 from collections.abc import Sequence
-from urllib.error import URLError
-from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationError
 
 from .contracts import EmbeddingBatch, ModelInfo, ProviderError, Usage
+from .openai_http import post_json
 from .validation import validate_batch
-
-
-class _NoRedirect(HTTPRedirectHandler):
-    def redirect_request(self, *args: object, **kwargs: object) -> None:
-        return None
-
-
-_opener = build_opener(_NoRedirect())
 
 
 class _Vector(BaseModel):
@@ -52,23 +42,7 @@ class OpenAIEmbeddingProvider:
         return self._model
 
     def _request(self, payload: dict[str, object]) -> object:
-        request = Request(
-            "https://api.openai.com/v1/embeddings",
-            data=json.dumps(payload).encode(),
-            headers={
-                "Authorization": "Bearer " + self._key.get_secret_value(),
-                "Content-Type": "application/json",
-            },
-            method="POST",
-        )
-        try:
-            with _opener.open(request, timeout=30) as response:
-                content = response.read(8 * 1024 * 1024 + 1)
-            if len(content) > 8 * 1024 * 1024:
-                raise ProviderError("EMBEDDING_RESPONSE_LIMIT")
-            return json.loads(content)
-        except (URLError, OSError, ValueError) as exc:
-            raise ProviderError("EMBEDDING_REQUEST_FAILED") from exc
+        return post_json(self._key, "embeddings", payload)
 
     def embed(self, texts: Sequence[str]) -> EmbeddingBatch:
         # UTF-8 byte counts conservatively bound tokens, without a model-specific tokenizer.

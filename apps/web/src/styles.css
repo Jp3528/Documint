@@ -973,6 +973,40 @@ td strong {
 .search-heading {
   display: block;
 }
+.chat-composer textarea {
+  font: inherit;
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid #b8c9cf;
+  border-radius: 8px;
+  margin-top: 10px;
+  color: #17343e;
+}
+.chat-composer textarea:focus-visible {
+  outline: 3px solid #bf720c;
+  outline-offset: 4px;
+}
+.chat-turn h2 {
+  font-size: 1.15rem;
+  overflow-wrap: anywhere;
+}
+.chat-answer {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.75;
+}
+.chat-citations {
+  padding-left: 20px;
+}
+.chat-citations li {
+  padding: 6px 0;
+}
+.chat-citations span {
+  display: block;
+  margin-top: 4px;
+}
 .search-heading > p:last-child {
   color: #5b737d;
   font-size: 0.9rem;
