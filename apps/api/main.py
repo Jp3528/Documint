@@ -15,6 +15,7 @@ from packages import __version__
 from packages.config import Settings, get_settings
 from packages.database import make_engine
 from packages.identity.organization import ConflictError, ForbiddenError, NotFoundError
+from packages.providers.contracts import ProviderError
 
 from .auth import profile_router
 from .auth import router as auth_router
@@ -22,6 +23,7 @@ from .documents import router as documents_router
 from .organization import router as organization_router
 from .processing import router as processing_router
 from .readiness import ReadinessResponse, dependency_probes, evaluate
+from .search import router as search_router
 from .upload_limit import UploadLimitMiddleware
 
 
@@ -51,6 +53,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(organization_router)
     application.include_router(documents_router)
     application.include_router(processing_router)
+    application.include_router(search_router)
     application.add_middleware(UploadLimitMiddleware, max_bytes=config.upload_max_bytes)
 
     @application.exception_handler(ForbiddenError)
@@ -70,11 +73,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # Validation errors can contain raw passwords in their `input`; never echo them.
         return JSONResponse({"detail": "Datos de solicitud inválidos"}, status_code=422)
 
+    @application.exception_handler(ProviderError)
+    async def provider_unavailable(_request: Request, _exc: ProviderError) -> JSONResponse:
+        return JSONResponse({"detail": "La búsqueda vectorial no está disponible"}, status_code=503)
+
     @application.middleware("http")
     async def protect_auth_cache(request: Request, call_next: RequestResponseEndpoint) -> Response:
         response = await call_next(request)
         if (
-            request.url.path.startswith(("/auth/", "/admin/", "/departments", "/documents"))
+            request.url.path.startswith(
+                ("/auth/", "/admin/", "/departments", "/documents", "/search")
+            )
             or request.url.path == "/me"
         ):
             response.headers["Cache-Control"] = "no-store"

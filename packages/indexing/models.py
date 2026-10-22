@@ -6,8 +6,10 @@ from uuid import UUID, uuid4
 from pgvector.sqlalchemy import VECTOR
 from sqlalchemy import (
     CheckConstraint,
+    Computed,
     DateTime,
     ForeignKey,
+    Index,
     Numeric,
     String,
     Text,
@@ -15,7 +17,7 @@ from sqlalchemy import (
     event,
     func,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column
 
 from packages.database import Base
@@ -52,6 +54,7 @@ class IndexChunk(Base):
     __tablename__ = "index_chunks"
     __table_args__ = (
         UniqueConstraint("index_revision_id", "position"),
+        Index("ix_index_chunks_search_vector", "search_vector", postgresql_using="gin"),
         CheckConstraint("position >= 0 AND length(text) > 0", name="content_valid"),
         CheckConstraint("sha256 ~ '^[0-9a-f]{64}$'", name="hash_valid"),
         CheckConstraint(
@@ -64,6 +67,9 @@ class IndexChunk(Base):
     text: Mapped[str] = mapped_column(Text)
     sha256: Mapped[str] = mapped_column(String(64))
     spans: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)
+    search_vector: Mapped[str] = mapped_column(
+        TSVECTOR, Computed("to_tsvector('spanish'::regconfig, text)", persisted=True)
+    )
 
 
 class ChunkEmbedding(Base):

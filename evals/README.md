@@ -15,6 +15,10 @@ CI usa fakes sin llamadas de IA. Las evaluaciones reales se ejecutan explícitam
 y sus resultados se separarán de las pruebas técnicas conforme a ADR 0004. La administración
 del dataset se implementa en 6B.
 
+Decisión del usuario del 22 de octubre de 2026: dejar pendientes las evaluaciones con
+proveedores reales de 4R y 5R. Se implementan sus herramientas y las pruebas FAKE/ACL;
+no se ejecutan llamadas pagadas ni se declara aprobado el componente REAL de esas sesiones.
+
 Para importar los ocho originales con ACL y versiones verificadas:
 
 ```bash
