@@ -82,7 +82,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         response = await call_next(request)
         if (
             request.url.path.startswith(
-                ("/auth/", "/admin/", "/departments", "/documents", "/search")
+                ("/auth/", "/admin/", "/departments", "/documents", "/search", "/sources")
             )
             or request.url.path == "/me"
         ):

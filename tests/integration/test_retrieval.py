@@ -17,7 +17,7 @@ from packages.documents.models import Document, DocumentGrant, DocumentVersion
 from packages.documents.service import DocumentService
 from packages.documents.validation import validate_upload
 from packages.identity.models import DepartmentMember, User, UserRole
-from packages.identity.organization import load_actor
+from packages.identity.organization import NotFoundError, load_actor
 from packages.indexing.chunking import ChunkConfig
 from packages.indexing.service import IndexService
 from packages.processing.enqueue import ensure_job
@@ -25,6 +25,7 @@ from packages.processing.service import process_job
 from packages.providers.contracts import EmbeddingBatch, ProviderError
 from packages.providers.fake import FakeEmbeddingProvider
 from packages.providers.validation import embedding_profile
+from packages.retrieval.citations import CitationService
 from packages.retrieval.contracts import SearchRequest
 from packages.retrieval.fusion import FusionConfig
 from packages.retrieval.service import RetrievalService
@@ -213,6 +214,18 @@ def test_search_api_validation_authentication_and_safe_provider_errors(
         assert result.status_code == 200 and result.json()["candidates"]
         assert result.headers["Cache-Control"] == "no-store"
         assert "object_key" not in result.text and "embedding" not in result.json()["candidates"][0]
+        hit = result.json()["candidates"][0]
+        opened = client.get(hit["source_url"], headers=headers)
+        assert opened.status_code == 200 and opened.headers["Cache-Control"] == "no-store"
+        assert opened.json()["sha256"] == hit["sha256"] and opened.json()["text"]
+        assert "text" not in hit and "object_key" not in opened.text
+        missing = client.get("/sources/00000000-0000-0000-0000-000000000000", headers=headers)
+        with h.factory() as db:
+            denied_id = (
+                service(db, "finance").lexical(SearchRequest(query="420000")).candidates[0].chunk_id
+            )
+        denied = client.get(f"/sources/{denied_id}", headers=headers)
+        assert missing.status_code == denied.status_code == 404 and missing.json() == denied.json()
         injection = client.post(
             "/search", json={"query": "'); DROP TABLE users; --"}, headers=headers
         )
@@ -294,3 +307,52 @@ def test_hybrid_is_deduplicated_diverse_and_configuration_is_visible(
             )
             embed.assert_not_called()
             assert lexical_only.candidates and lexical_only.embedding_mode is None
+
+
+def test_citations_reconstruct_real_locators_and_preserve_historical_sources(
+    indexed: SearchHarness,
+) -> None:
+    h = indexed
+    with h.factory() as db:
+        retrieval = service(db, "admin")
+        result = retrieval.lexical(
+            SearchRequest(query="viajes", document_id=corpus_document_id("travel"))
+        )
+        citation = CitationService(db, retrieval.actor)
+        view = citation.search_view(result)
+        assert view.candidates
+        hit = view.candidates[0]
+        original = citation.source(hit.chunk_id)
+        assert hit.sha256 == original.sha256 and len(hit.snippet) <= 500
+        assert hit.locators[0].page == 1 and original.text.startswith(hit.snippet.rstrip("…"))
+        assert hit.source_url == f"/sources/{hit.chunk_id}"
+        assert str(hit.version_id) in hit.original_url
+        index = IndexService(db, h.storage, h.settings)
+        newer = index.prepare(
+            hit.version_id,
+            ChunkConfig(max_characters=128, overlap_characters=16),
+            embedding_profile(FakeEmbeddingProvider().model),
+        )
+        index.embed(newer.id, FakeEmbeddingProvider())
+        index.activate(newer.id)
+        assert citation.source(hit.chunk_id) == original
+        document = db.get(Document, hit.document_id)
+        assert document
+        document.archived = True
+        db.commit()
+        assert not retrieval.lexical(
+            SearchRequest(query="viajes", document_id=hit.document_id)
+        ).candidates
+        assert citation.source(hit.chunk_id) == original
+        auditor = service(db, "auditor_granted")
+        candidate = auditor.lexical(SearchRequest(query="Atlas")).candidates[0]
+        restricted = CitationService(db, auditor.actor)
+        assert restricted.source(candidate.chunk_id)
+        grant = db.scalar(
+            select(DocumentGrant).where(DocumentGrant.document_id == corpus_document_id("incident"))
+        )
+        assert grant
+        db.delete(grant)
+        db.commit()
+        with pytest.raises(NotFoundError):
+            restricted.source(candidate.chunk_id)

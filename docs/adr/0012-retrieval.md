@@ -49,3 +49,12 @@ La diversidad se aplica después de ordenar; puede reducir el número final de r
 No hay combinación de escalas crudas, reranker externo ni llamadas LLM durante la búsqueda.
 Un fallo del proveedor vectorial se devuelve explícitamente, sin esconderlo como éxito híbrido.
 Antes de fusionar se comprueban nuevamente ACL y revisión activa sobre ambos conjuntos.
+
+## Fuentes navegables
+
+El límite de snippet es 500 caracteres. La API reconstruye la cita consultando el chunk
+publicado, calcula su SHA-256 y usa los locators persistidos; descarta evidencia corrupta.
+`GET /sources/{chunk_id}` reautoriza con roles/membresías actuales antes de devolver texto.
+Un chunk histórico READY puede consultarse con READ aunque ya no esté activo o esté archivado.
+Las revisiones históricas nunca se usan como candidatos nuevos. El original se descarga por
+su endpoint privado, que vuelve a comprobar permisos y hash/tamaño de esa versión.
